@@ -1,6 +1,6 @@
 {
     "name": "leafs/ui",
-    "description": "Leaf UI is a .",
+    "description": "Leaf UI is a PHP library for building user interfaces",
     "type": "library",
     "license": "MIT",
     "authors": [
