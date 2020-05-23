@@ -96,13 +96,19 @@ $html = $ui::body([
 		$ui::_chip("Food", [
 			$ui::a(["href" => "#", "wyn:btn-clear" => "", "aria-label" => "Close", "role" => "button"])
 		]),
+		$ui::hr(),
+		$ui::h2("Carousel"),
 		$ui::_carousel([
-			$ui::_carouselItem("", "", $ui::img("./1.jpg", ["class" => "img-responsive rounded", "style" => "width: 100%;height: 100% !important;"])),
-			$ui::_carouselItem("", "", $ui::img("./2.jpg", ["class" => "img-responsive rounded", "style" => "width: 100%;height: 100% !important;"])),
-			$ui::_carouselItem("", "", $ui::img("./1.jpg", ["class" => "img-responsive rounded", "style" => "width: 100%;height: 100% !important;"])),
-			$ui::_carouselItem("", "", $ui::img("./2.jpg", ["class" => "img-responsive rounded", "style" => "width: 100%;height: 100% !important;"])),
+			$ui::_carouselItem("slide-4", "slide-2", $ui::img("./1.jpg", ["style" => "width: 100%;height: 100% !important;"])),
+			$ui::_carouselItem("slide-1", "slide-3", $ui::img("./2.jpg", ["style" => "width: 100%;height: 100% !important;"])),
+			$ui::_carouselItem("slide-2", "slide-4", $ui::img("./1.jpg", ["style" => "width: 100%;height: 100% !important;"])),
+			$ui::_carouselItem("slide-3", "slide-1", $ui::img("./2.jpg", ["style" => "width: 100%;height: 100% !important;"])),
 		]),
 		$ui::hr(),
+		$ui::h2("Bars"),
+		$ui::_bars([
+			$ui::_bar(["value" => "25", "tooltip" => "25 referrals"])
+		]),
 		$ui::br(),
 		$ui::br(),
 	])

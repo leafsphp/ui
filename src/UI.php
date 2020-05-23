@@ -20,13 +20,13 @@ class UI {
 	public const SINGLE_TAG = "single-tag";
 	public const SELF_CLOSING = "self-closing";
 
-	public static function random_id($possible = "") {
-		$seed = str_split('abcdefghijklmnopqrstuvwxyz'.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.'0123456789!_-');
+	public static function random_id($element = "") {
+		$seed = str_split('abcdefghijklmnopqrstuvwxyz'.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.'0123456789_-');
 		shuffle($seed);
 		$rand = '';
 		foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
 	
-		return $rand;
+		return "$rand-$element";
 	}
 
 	/**

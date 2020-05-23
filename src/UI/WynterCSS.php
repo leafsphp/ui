@@ -54,6 +54,43 @@ class WynterCSS extends \Leaf\UI {
 		return self::span($props, $children);
 	}
 
+	public static function _bars(array $children, array $props = [])
+	{
+		if (!isset($props["class"])) $props["class"] = "";
+		$props["class"] .= " bar";
+		if (isset($props["variant"])) {
+			$props["class"] .= " bar-{$props["variant"]}";
+			unset($props["variant"]);
+		}
+		return self::div($props, $children);
+	}
+
+	public static function _bar(array $props = [])
+	{
+		if (!isset($props["class"])) $props["class"] = "";
+		$props["class"] .= " bar-item";
+		$props["role"] = "progressbar";
+
+		if (!isset($props["style"])) $props["style"] = "";
+		$value = $props["value"];
+		$props["style"] .= "width:{$value}% !important;";
+		$props["aria-valuenow"] = $value;
+		unset($props["value"]);
+
+		$props["aria-valuemin"] = isset($props["min"]) ? $props["min"] : "0";
+		if(isset($props["min"])) unset($props["min"]);
+
+		$props["aria-valuemax"] = isset($props["max"]) ? $props["max"] : "100";
+		if(isset($props["max"])) unset($props["max"]);
+
+		if (isset($props["tooltip"])) {
+			$props["class"] .= " tooltip";
+			$props["data-tooltip"] = $value;
+		}
+		$show = isset($props["show-value"]) ? $value : "";
+		return self::div($props, $show);
+	}
+
 	public static function _breadcrumb(array $breadcrumbs)
 	{
 		$links = "";
@@ -88,15 +125,15 @@ class WynterCSS extends \Leaf\UI {
 		return self::div($props, $children);
 	}
 
-	public static function _carousel(array $children, array $props = []) 
+	public static function _carousel(array $children, array $ids = ["slide-1", "slide-2", "slide-3", "slide-4"], array $props = []) 
 	{
 		$props["class"] = isset($props["class"])  ? $props["class"] . " carousel" : "carousel";
 
 		return self::div($props, [
-			self::loop($children, function() {
+			self::loop($ids, function($id) {
 				return self::input("radio", "carousel-radio", [
 					"class" => "carousel-locator",
-					"id" => "slide-1",
+					"id" => $id,
 					"hidden" => "",
 					"checked" => "",
 					"name" => "carousel-radio"

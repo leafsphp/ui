@@ -58,11 +58,11 @@ This method let's you create a plain HTML structure consisting which looks somew
 Usage:
 
 ```js
-$html = ((
+$html = (
 	$ui::_template("Title Here", [
 		// Body Components here
 	])
-));
+);
 
 $ui::render($html);
 ```
