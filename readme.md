@@ -54,3 +54,19 @@ This method let's you create a plain HTML structure consisting which looks somew
 	</body>
 </html>
 ```
+
+Usage:
+
+```js
+$html = ((
+	$ui::_template("Title Here", [
+		// Body Components here
+	])
+));
+
+$ui::render($html);
+```
+
+### Wynter CSS Integration
+
+Leaf UI with wynter css allows you to use wynter css components instead of raw HTML components. Wynter CSS is a CSS Framework (work-in-progress) based on [spectre CSS](https://picturepan2.github.io/spectre/). So, with Leaf UI - Wynter Components, you can build your amazing frontends without any additional CSS or Javascript.
