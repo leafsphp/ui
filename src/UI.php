@@ -4,10 +4,9 @@ namespace Leaf;
 /**
  * Leaf UI [BETA]
  * ---------------------
- * Simple UI components without markup
+ * Leaf UI is a PHP library for building user interfaces.
  * 
  * @version 1.0.0
- * @since 2.1.0
  * @author Michael Darko <mychi.darko@gmail.com>
  */
 class UI {
@@ -66,7 +65,7 @@ class UI {
 			return self::self_closing($element, $attributes, $id);
 		}
 
-		return "<$element $attributes id=\"$id\">$subs</$element>";
+		return "<$element id=\"$id\" $attributes>$subs</$element>";
 	}
 
 	/**
@@ -133,6 +132,44 @@ class UI {
 	}
 
 	/**
+	 * Loop over an array of items
+	 * 
+	 * @param array $array The array to loop through
+	 * @param callable $handler Call back function to run per iteration
+	 */
+	public static function loop(array $array, callable $handler) {
+		$element = "";
+		if (is_callable($handler)) {
+			foreach ($array as $key => $value) {
+				$element .= call_user_func($handler, $value, $key);
+			}
+		}
+		return $element;
+	}
+
+	/**
+	 * Create an if condition
+	 */
+	public static function if($condition, $element, $else = null) {
+		if ($condition) {
+			return $element;
+		} else {
+			return $else;
+		}
+	}
+
+	/**
+	 * Create a negative if condition
+	 */
+	public static function unless(bool $condition, $element, $else = null) {
+		if (!$condition) {
+			return $element;
+		} else {
+			return $else;
+		}
+	}
+
+	/**
 	 * Use a custom element
 	 * 
 	 * @param string $name The custom element you want to use
@@ -189,15 +226,19 @@ class UI {
 	/**
 	 * Render a Leaf UI
 	 */
-	public static function render($element) {
+	public static function render($element, $inject = null) {
 		header("Content-Type: text/html");
-		echo $element;
+		echo $inject.$element;
 	}
 
 	public static function link(string $href, string $rel = "stylesheet", array $props = []) {
 		$props["href"] = $href;
 		$props["rel"] = $rel;
 		return self::create_element("link", $props, [], self::SINGLE_TAG);
+	}
+
+	public static function _vendor($file) {
+		return "vendor\\leafs\\ui\\src\\UI\\$file";
 	}
 
 	/**
@@ -273,6 +314,14 @@ class UI {
 		return self::create_element("body", $props, $children);
 	}
 
+	public static function br(array $props = []) {
+		return self::create_element("br", $props, [], self::SINGLE_TAG);
+	}
+
+	public static function hr(array $props = []) {
+		return self::create_element("hr", $props, [], self::SINGLE_TAG);
+	}
+
 	public static function header(array $props = [], array $children = []) {
 		if (!isset($props["id"])) {
 			$id = time()."header";
@@ -297,11 +346,12 @@ class UI {
 		return self::create_element("aside", $props, $children);
 	}
 
-	public static function img(array $props = []) {
+	public static function img(string $image, array $props = []) {
 		if (!isset($props["id"])) {
 			$id = time()."img";
 			$props["id"] = $id;
 		}
+		$props["src"] = $image;
 		return self::create_element("img", $props, [], self::SINGLE_TAG);
 	}
 
@@ -313,12 +363,12 @@ class UI {
 		return self::create_element("figure", $props, $children);
 	}
 
-	public static function a(array $props = [], array $children = []) {
+	public static function a(array $props = [], $children = []) {
 		if (!isset($props["id"])) {
 			$id = time()."a";
 			$props["id"] = $id;
 		}
-		return self::create_element("a", $props, $children);
+		return self::create_element("a", $props, is_array($children) ? $children : [$children]);
 	}
 
 	public static function _link(array $props = [], array $children = []) {
@@ -333,20 +383,26 @@ class UI {
 	// --------------------- HTML CONTAINER ELEMENTS -----------------------
 
 	/**
-	 * HTML DIV Element
+	 * HTML DIV Element 
+	 * 
+	 * @param array $props Element props
+	 * @param string|array $children Children
 	 */
-	public static function div(array $props = [], array $children = []) {
+	public static function div(array $props = [], $children = []) {
 		if (!isset($props["id"])) {
 			$id = time()."div";
 			$props["id"] = $id;
 		}
-		return self::create_element("div", $props, $children);
+		return self::create_element("div", $props, is_array($children) ? $children : [$children]);
 	}
 
 	/**
 	 * Custom div Element (padding container)
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
 	 */
-	public static function _container(array $props = [], array $children = []) {
+	public static function _container($children, array $props = []) {
 		if (!isset($props["id"])) {
 			$id = time()."container";
 			$props["id"] = $id;
@@ -355,13 +411,13 @@ class UI {
 			$props["style"] = "";
 		}
 		$props["style"] = "padding: 12px 25px; ".$props["style"];
-		return self::create_element("div", $props, $children);
+		return self::create_element("div", $props, is_array($children) ? $children : [$children]);
 	}
 	
 	/**
 	 * Custom div Element (flex row)
 	 */
-	public static function _row(array $props = [], array $children = []) {
+	public static function _row(array $children, array $props = []) {
 		if (!isset($props["id"])) {
 			$id = time()."div";
 			$props["id"] = $id;
@@ -376,7 +432,7 @@ class UI {
 	/**
 	 * Custom div Element (flex column)
 	 */
-	public static function _column(array $props = [], array $children = []) {
+	public static function _column(array $children, array $props = []) {
 		if (!isset($props["id"])) {
 			$id = time()."div";
 			$props["id"] = $id;
@@ -390,14 +446,18 @@ class UI {
 
 	/**
 	 * HTML Span Element
+	 * 
+	 * @param array $props Element props
+	 * @param string|array $children Children
 	 */
-	public static function span(array $props = [], array $children = []) {
+	public static function span(array $props = [], $children = []) {
 		if (!isset($props["id"])) {
 			$id = time()."span";
 			$props["id"] = $id;
 		}
-		return self::create_element("span", $props, $children);
+		return self::create_element("span", $props, is_array($children) ? $children : [$children]);
 	}
+
 
 	public static function section(array $props = [], array $children = []) {
 		if (!isset($props["id"])) {
