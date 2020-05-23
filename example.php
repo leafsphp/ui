@@ -17,10 +17,10 @@ $c = 3;
 $ui::render((
 	$ui::_template("Title Here", [
 		$ui::_row([
-			$ui::loop($arr, function($value) use($ui, $c) {
+			$ui::loop($arr, function($value, $key) use($ui, $c) {
 				return (
 					$ui::div([], [
-						$ui::h2($value["name"]),
+						$ui::h2($ui::small("Name: ").$value["name"]),
 						$ui::p("Something Really Interesting"),
 						$ui::if($c == 2, (
 							$ui::div([], "This is an if statement")

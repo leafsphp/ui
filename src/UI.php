@@ -20,15 +20,14 @@ class UI {
 	public const SINGLE_TAG = "single-tag";
 	public const SELF_CLOSING = "self-closing";
 
-	public static function random_id($element = "") {
-		$seed = str_split('abcdefghijklmnopqrstuvwxyz'.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.'0123456789_-');
-		shuffle($seed);
-		$rand = '';
-		foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
+	/*
+    |--------------------------------------------------------------------------
+    | Leaf UI Base
+    |--------------------------------------------------------------------------
+    | Leaf UI specific code. Most of Leaf UI depends on this code
+    |--------------------------------------------------------------------------
+	*/
 	
-		return "$rand-$element";
-	}
-
 	/**
 	 * Create an HTML element
 	 * 
@@ -122,7 +121,9 @@ class UI {
 	}
 
 	/**
-	 * Create your own element. [Experimental]
+	 * [Experimental]
+	 *
+	 * Create your own element without extending Leaf\UI. 
 	 * 
 	 * It is adviced that you parse all custom elements into native HTML code.
 	 * 
@@ -141,45 +142,7 @@ class UI {
 	}
 
 	/**
-	 * Loop over an array of items
-	 * 
-	 * @param array $array The array to loop through
-	 * @param callable $handler Call back function to run per iteration
-	 */
-	public static function loop(array $array, callable $handler) {
-		$element = "";
-		if (is_callable($handler)) {
-			foreach ($array as $key => $value) {
-				$element .= call_user_func($handler, $value, $key);
-			}
-		}
-		return $element;
-	}
-
-	/**
-	 * Create an if condition
-	 */
-	public static function if($condition, $element, $else = null) {
-		if ($condition) {
-			return $element;
-		} else {
-			return $else;
-		}
-	}
-
-	/**
-	 * Create a negative if condition
-	 */
-	public static function unless(bool $condition, $element, $else = null) {
-		if (!$condition) {
-			return $element;
-		} else {
-			return $else;
-		}
-	}
-
-	/**
-	 * Use a custom element
+	 * Use an element created with `make`
 	 * 
 	 * @param string $name The custom element you want to use
 	 */
@@ -233,25 +196,92 @@ class UI {
 	}
 
 	/**
+	 * Generate a random id
+	 *
+	 * @param string $element An html element name to append to id
+	 * @return string The random id
+	 */
+	public static function random_id($element = "") {
+		$seed = str_split('abcdefghijklmnopqrstuvwxyz'.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.'0123456789_-');
+		shuffle($seed);
+		$rand = '';
+		foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
+	
+		return "$rand-$element";
+	}
+
+	/**
 	 * Render a Leaf UI
+	 * 
+	 * @param string $element The UI components to render
+	 * @param string $inject A string to inject into element
 	 */
 	public static function render($element, $inject = null) {
 		header("Content-Type: text/html");
 		echo $inject.$element;
 	}
 
-	public static function link(string $href, string $rel = "stylesheet", array $props = []) {
-		$props["href"] = $href;
-		$props["rel"] = $rel;
-		return self::create_element("link", $props, [], self::SINGLE_TAG);
+	/**
+	 * Loop over an array of items
+	 * 
+	 * @param array $array The array to loop through
+	 * @param callable $handler Call back function to run per iteration
+	 */
+	public static function loop(array $array, callable $handler) {
+		$element = "";
+		if (is_callable($handler)) {
+			foreach ($array as $key => $value) {
+				$element .= call_user_func($handler, $value, $key);
+			}
+		}
+		return $element;
 	}
 
+	/**
+	 * Create an if condition
+	 * 
+	 * @param mixed $condition The if condition
+	 * @param mixed $element The element to return if $condition is true
+	 * @param mixed $else The element to return if $condition is false
+	 */
+	public static function if($condition, $element, $else = null) {
+		if ($condition) {
+			return $element;
+		} else {
+			return $else;
+		}
+	}
+
+	/**
+	 * Create a negative if condition
+	 * 
+	 * @param mixed $condition The unless condition
+	 * @param mixed $element The element to return if $condition is false
+	 * @param mixed $else The element to return if $condition is true
+	 */
+	public static function unless($condition, $element, $else = null) {
+		if (!$condition) {
+			return $element;
+		} else {
+			return $else;
+		}
+	}
+
+	/**
+	 * Return Leaf UI's vendor path
+	 * 
+	 * @param string $file A file/path to append to vendor path
+	 * @return string Path to leaf ui in vendor folder
+	 */
 	public static function _vendor($file = null) {
 		return "vendor\\leafs\\ui\\src\\UI\\$file";
 	}
 
 	/**
 	 * Import/Use a styleheet
+	 * 
+	 * @param string|array $src The styles/stylesheet to apply
+	 * @param array $props The attributes for style/link tag
 	 */
 	public static function _style($src, array $props = []) {
 		if (!is_array($src)) {
@@ -262,6 +292,9 @@ class UI {
 
 	/**
 	 * Import/Use a script
+	 * 
+	 * @param string|array $src The internal/external scripts to apply
+	 * @param array $props The attributes for style/link tag
 	 */
 	public static function _script($src, array $props = []) {
 		if (!is_array($src)) {
@@ -271,11 +304,18 @@ class UI {
 		return self::create_element("script", $props, $src);
 	}
 
-	// -------------------------- GENERAL HTML STUFF --------------------------
+	/*
+    |--------------------------------------------------------------------------
+    | Structural HTML Tags
+    |--------------------------------------------------------------------------
+	*/
 	/**
 	 * HTML Element
+	 * 
+	 * @param array $children HTML Element children
+	 * @param array $props Attributes for HTML element
 	 */
-	public static function html(array $children = [], array $props = []) {
+	public static function html(array $children, array $props = []) {
 		if (!isset($props["id"])) {
 			$id = time()."html";
 			$props["id"] = $id;
@@ -284,9 +324,12 @@ class UI {
 	}
 
 	/**
-	 * Head Tag
+	 * Head Element
+	 * 
+	 * @param array $children Head Element children
+	 * @param array $props Attributes for Head element
 	 */
-	public static function head(array $children = [], array $props = []) {
+	public static function head(array $children, array $props = []) {
 		if (!isset($props["id"])) {
 			$id = time()."head";
 			$props["id"] = $id;
@@ -294,28 +337,13 @@ class UI {
 		return self::create_element("head", $props, $children);
 	}
 
-	public static function title(string $title, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."title";
-			$props["id"] = $id;
-		}
-		return self::create_element("title", $props, [$title]);
-	}
-
-	public static function meta(string $name, string $content, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."meta";
-			$props["id"] = $id;
-		}
-		$props["name"] = $name;
-		$props["content"] = $content;
-		return self::create_element("meta", $props, [], self::SINGLE_TAG);
-	}
-
 	/**
-	 * Body Element
+	 * body Element
+	 * 
+	 * @param array $children body Element children
+	 * @param array $props Attributes for body element
 	 */
-	public static function body(array $children = [], array $props = []) {
+	public static function body(array $children, array $props = []) {
 		if (!isset($props["id"])) {
 			$id = time()."body";
 			$props["id"] = $id;
@@ -323,14 +351,12 @@ class UI {
 		return self::create_element("body", $props, $children);
 	}
 
-	public static function br(array $props = []) {
-		return self::create_element("br", $props, [], self::SINGLE_TAG);
-	}
-
-	public static function hr(array $props = []) {
-		return self::create_element("hr", $props, [], self::SINGLE_TAG);
-	}
-
+	/**
+	 * header Element
+	 * 
+	 * @param array $props Attributes for header element
+	 * @param array $children header Element children
+	 */
 	public static function header(array $props = [], array $children = []) {
 		if (!isset($props["id"])) {
 			$id = time()."header";
@@ -339,6 +365,27 @@ class UI {
 		return self::create_element("header", $props, $children);
 	}
 
+	/**
+	 * nav Element
+	 * 
+	 * @param array $props Attributes for nav element
+	 * @param array $children nav Element children
+	 */
+	public static function nav(array $props = [], array $children = [])
+	{
+		if (!isset($props["id"])) {
+			$id = time() . "nav";
+			$props["id"] = $id;
+		}
+		return self::create_element("nav", $props, $children);
+	}
+
+	/**
+	 * footer Element
+	 * 
+	 * @param array $props Attributes for footer element
+	 * @param array $children footer Element children
+	 */
 	public static function footer(array $props = [], array $children = []) {
 		if (!isset($props["id"])) {
 			$id = time()."footer";
@@ -347,6 +394,12 @@ class UI {
 		return self::create_element("footer", $props, $children);
 	}
 
+	/**
+	 * aside Element
+	 * 
+	 * @param array $props Attributes for aside element
+	 * @param array $children aside Element children
+	 */
 	public static function aside(array $props = [], array $children = []) {
 		if (!isset($props["id"])) {
 			$id = time()."aside";
@@ -355,23 +408,30 @@ class UI {
 		return self::create_element("aside", $props, $children);
 	}
 
-	public static function img(string $image, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."img";
-			$props["id"] = $id;
-		}
-		$props["src"] = $image;
-		return self::create_element("img", $props, [], self::SINGLE_TAG);
+	/**
+	 * Line Break
+	 * 
+	 * @param array $props Attributes for br element
+	 */
+	public static function br(array $props = []) {
+		return self::create_element("br", $props, [], self::SINGLE_TAG);
 	}
 
-	public static function figure(array $props = [], array $children = []) {
-		if (!isset($props["id"])) {
-			$id = time()."figure";
-			$props["id"] = $id;
-		}
-		return self::create_element("figure", $props, $children);
+	/**
+	 * Horizontal Rule
+	 * 
+	 * @param array $props Attributes for hr element
+	 */
+	public static function hr(array $props = []) {
+		return self::create_element("hr", $props, [], self::SINGLE_TAG);
 	}
 
+	/**
+	 * HTML anchor Element 
+	 * 
+	 * @param array $props Element props
+	 * @param string|array $children Children
+	 */
 	public static function a(array $props = [], $children = []) {
 		if (!isset($props["id"])) {
 			$id = time()."a";
@@ -379,17 +439,6 @@ class UI {
 		}
 		return self::create_element("a", $props, is_array($children) ? $children : [$children]);
 	}
-
-	public static function _link(array $props = [], array $children = []) {
-		if (!isset($props["id"])) {
-			$id = time()."_link";
-			$props["id"] = $id;
-		}
-		return self::create_element("a", $props, $children);
-	}
-
-
-	// --------------------- HTML CONTAINER ELEMENTS -----------------------
 
 	/**
 	 * HTML DIV Element 
@@ -406,54 +455,6 @@ class UI {
 	}
 
 	/**
-	 * Custom div Element (padding container)
-	 * 
-	 * @param string|array $children Children
-	 * @param array $props Element props
-	 */
-	public static function _container($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."container";
-			$props["id"] = $id;
-		}
-		if (!isset($props["style"])) {
-			$props["style"] = "";
-		}
-		$props["style"] = "padding: 12px 25px; ".$props["style"];
-		return self::create_element("div", $props, is_array($children) ? $children : [$children]);
-	}
-	
-	/**
-	 * Custom div Element (flex row)
-	 */
-	public static function _row(array $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."div";
-			$props["id"] = $id;
-		}
-		if (!isset($props["style"])) {
-			$props["style"] = "";
-		}
-		$props["style"] = "display: flex; ".$props["style"];
-		return self::create_element("div", $props, $children);
-	}
-
-	/**
-	 * Custom div Element (flex column)
-	 */
-	public static function _column(array $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."div";
-			$props["id"] = $id;
-		}
-		if (!isset($props["style"])) {
-			$props["style"] = "";
-		}
-		$props["style"] = "display: flex; flex-direction: column; ".$props["style"];
-		return self::create_element("div", $props, $children);
-	}
-
-	/**
 	 * HTML Span Element
 	 * 
 	 * @param array $props Element props
@@ -467,7 +468,12 @@ class UI {
 		return self::create_element("span", $props, is_array($children) ? $children : [$children]);
 	}
 
-
+	/**
+	 * Section Element
+	 * 
+	 * @param array $props Element props
+	 * @param string|array $children Children
+	 */
 	public static function section(array $props = [], array $children = []) {
 		if (!isset($props["id"])) {
 			$id = time()."section";
@@ -476,10 +482,25 @@ class UI {
 		return self::create_element("section", $props, $children);
 	}
 
-	// --------------------------- TYPOGRAPHY -----------------------------
+	/**
+	 * HTML hgroup Element
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
+	 */
+	public static function hgroup($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."hgroup";
+			$props["id"] = $id;
+		}
+		return self::create_element("hgroup", $props, is_array($children) ? $children : [$children]);
+	}
 
 	/**
 	 * HTML H1 Element
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
 	 */
 	public static function h1($children, array $props = []) {
 		if (!isset($props["id"])) {
@@ -491,6 +512,9 @@ class UI {
 
 	/**
 	 * HTML H2 Element
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
 	 */
 	public static function h2($children, array $props = []) {
 		if (!isset($props["id"])) {
@@ -502,6 +526,9 @@ class UI {
 
 	/**
 	 * HTML H3 Element
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
 	 */
 	public static function h3($children, array $props = []) {
 		if (!isset($props["id"])) {
@@ -513,6 +540,9 @@ class UI {
 
 	/**
 	 * HTML H4 Element
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
 	 */
 	public static function h4($children, array $props = []) {
 		if (!isset($props["id"])) {
@@ -524,6 +554,9 @@ class UI {
 
 	/**
 	 * HTML H5 Element
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
 	 */
 	public static function h5($children, array $props = []) {
 		if (!isset($props["id"])) {
@@ -535,6 +568,9 @@ class UI {
 
 	/**
 	 * HTML H6 Element
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
 	 */
 	public static function h6($children, array $props = []) {
 		if (!isset($props["id"])) {
@@ -545,23 +581,11 @@ class UI {
 	}
 
 	/**
-	 * Custom text Element (span)
+	 * HTML Blockquote
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
 	 */
-	public static function _text(string $text, array $styles = [], array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."_text";
-			$props["id"] = $id;
-		}
-		if (!isset($styles["color"]))  $styles["color"] = "black";
-		if (!isset($styles["size"])) $styles["size"] = "16px";
-		if (!isset($styles["weight"])) $styles["weight"] = "normal";
-		if (!isset($styles["family"])) $styles["family"] = "sans-serif";
-		if (!isset($props["style"])) $props["style"] = "";
-		
-		$props["style"] = "color: {$styles['color']};font-size: {$styles['size']};font-weight: {$styles['weight']};font-family: {$styles['family']};margin: 0px;".$props["style"];
-		return self::create_element("p", $props, [$text]);
-	}
-
 	public static function blockquote($children, array $props = []) {
 		if (!isset($props["id"])) {
 			$id = time()."blockquote";
@@ -570,82 +594,11 @@ class UI {
 		return self::create_element("blockquote", $props, is_array($children) ? $children : [$children]);
 	}
 
-	public static function tt($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."tt";
-			$props["id"] = $id;
-		}
-		return self::create_element("tt", $props, is_array($children) ? $children : [$children]);
-	}
-
-	public static function b($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."b";
-			$props["id"] = $id;
-		}
-		return self::create_element("b", $props, is_array($children) ? $children : [$children]);
-	}
-
-	public static function i($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."i";
-			$props["id"] = $id;
-		}
-		return self::create_element("i", $props, is_array($children) ? $children : [$children]);
-	}
-
-	public static function u($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."u";
-			$props["id"] = $id;
-		}
-		return self::create_element("u", $props, is_array($children) ? $children : [$children]);
-	}
-
-	public static function sub($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."sub";
-			$props["id"] = $id;
-		}
-		return self::create_element("sub", $props, is_array($children) ? $children : [$children]);
-	}
-
-	public static function sup($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."sup";
-			$props["id"] = $id;
-		}
-		return self::create_element("sup", $props, is_array($children) ? $children : [$children]);
-	}
-
-	public static function uppercase(string $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."uppercase";
-			$props["id"] = $id;
-		}
-		$children = strtoupper($children);
-		return self::create_element("p", $props, [$children]);
-	}
-
-	public static function lowercase(string $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."lowercase";
-			$props["id"] = $id;
-		}
-		$children = strtolower($children);
-		return self::create_element("p", $props, [$children]);
-	}
-
-	public static function _icon(string $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = time()."_icon";
-			$props["id"] = $id;
-		}
-		return self::create_element("i", $props, [$children]);
-	}
-
 	/**
 	 * HTML Paragraph Element
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
 	 */
 	public static function p($children, array $props = []) {
 		if (!isset($props["id"])) {
@@ -657,6 +610,9 @@ class UI {
 
 	/**
 	 * HTML Article Element
+	 * 
+	 * @param array $props Element props
+	 * @param array $children Children
 	 */
 	public static function article(array $props = [], array $children = []) {
 		if (!isset($props["id"])) {
@@ -666,12 +622,263 @@ class UI {
 		return self::create_element("article", $props, $children);
 	}
 
-	// ----------------- FORM ELEMENTS ----------------------
+	/**
+	 * HTML 5 Details Element
+	 * 
+	 * @param array $props Element props
+	 * @param array $children Children
+	 */
+	public static function details(array $props = [], array $children = []) {
+		if (!isset($props["id"])) {
+			$id = time()."details";
+			$props["id"] = $id;
+		}
+		return self::create_element("details", $props, $children);
+	}
+
+	/**
+	 * Html summary
+	 * 
+	 * @param array $props Element props
+	 * @param array $children Children
+	 */
+	public static function summary(array $props = [], array $children = []) {
+		if (!isset($props["id"])) {
+			$id = time() . "summary";
+			$props["id"] = $id;
+		}
+		return self::create_element("summary", $props, $children);
+	}
+
+	/*
+    |--------------------------------------------------------------------------
+    | Meta-data HTML Tags
+    |--------------------------------------------------------------------------
+	*/
+
+	/**
+	 * Html Link Tag
+	 * 
+	 * @param string $href Link to resource
+	 * @param string $rel Resource's relation to current document
+	 * @param array $props Link tag attributes
+	 */
+	public static function link(string $href, string $rel = "stylesheet", array $props = []) {
+		$props["href"] = $href;
+		$props["rel"] = $rel;
+		return self::create_element("link", $props, [], self::SINGLE_TAG);
+	}
+
+	/**
+	 * Html Base Tag
+	 * 
+	 * @param string $href base url
+	 * @param array $props Link tag attributes
+	 */
+	public static function base(string $href, array $props = []) {
+		$props["href"] = $href;
+		return self::create_element("base", $props, [], self::SINGLE_TAG);
+	}
+
+	/**
+	 * Title element
+	 * 
+	 * @param string $title The document title
+	 * @param array $props Title Element props
+	 */
+	public static function title(string $title, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."title";
+			$props["id"] = $id;
+		}
+		return self::create_element("title", $props, [$title]);
+	}
+
+	/**
+	 * Meta Tag
+	 * 
+	 * @param string $name meta name property
+	 * @param string $content meta content property
+	 * @param array $props Additional props
+	 */
+	public static function meta(string $name, string $content, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."meta";
+			$props["id"] = $id;
+		}
+		$props["name"] = $name;
+		$props["content"] = $content;
+		return self::create_element("meta", $props, [], self::SINGLE_TAG);
+	}
+
+	/*
+    |--------------------------------------------------------------------------
+    | Formatting Tags
+    |--------------------------------------------------------------------------
+	*/
+
+	/**
+	 * tt tag
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function tt($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."tt";
+			$props["id"] = $id;
+		}
+		return self::create_element("tt", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
+	 * b tag
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function b($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."b";
+			$props["id"] = $id;
+		}
+		return self::create_element("b", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
+	 * i tag
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function i($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."i";
+			$props["id"] = $id;
+		}
+		return self::create_element("i", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
+	 * u tag
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function u($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."u";
+			$props["id"] = $id;
+		}
+		return self::create_element("u", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
+	 * small tag
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function small($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."small";
+			$props["id"] = $id;
+		}
+		return self::create_element("small", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
+	 * sub tag
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function sub($children, array $props = [])
+	{
+		if (!isset($props["id"])) {
+			$id = time() . "sub";
+			$props["id"] = $id;
+		}
+		return self::create_element("sub", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
+	 * sup tag
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function sup($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."sup";
+			$props["id"] = $id;
+		}
+		return self::create_element("sup", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/*
+    |--------------------------------------------------------------------------
+    | Embedded Content Tags
+    |--------------------------------------------------------------------------
+	*/
+	
+	/**
+	 * figure Element
+	 * 
+	 * @param array $props Attributes for figure element
+	 * @param array $children figure Element children
+	 */
+	public static function figure(array $props = [], array $children = []) {
+		if (!isset($props["id"])) {
+			$id = time()."figure";
+			$props["id"] = $id;
+		}
+		return self::create_element("figure", $props, $children);
+	}
+
+	/**
+	 * img Element
+	 * 
+	 * @param array $image image source
+	 * @param array $props Attributes for img element
+	 */
+	public static function img(string $image, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."img";
+			$props["id"] = $id;
+		}
+		$props["src"] = $image;
+		return self::create_element("img", $props, [], self::SINGLE_TAG);
+	}
+
+	/*
+    |--------------------------------------------------------------------------
+    | Form Tags
+    |--------------------------------------------------------------------------
+	*/
+
+	/**
+	 * Shorthand method for creating an HTML form element
+	 * 
+	 * @param string $method HTTP method
+	 * @param string $action Form action
+	 * @param array $fields Form Fields
+	 * @param array $props Other attributes eg: `style`
+	 */
+	public static function form(string $method, string $action, array $fields, array $props = []) {
+		$id = time().$action;
+
+		$props["action"] = $action;
+		$props["method"] = $method;
+		$props["id"] = $id;
+
+		return self::create_element("form", $props, $fields);
+	}
 
 	/**
 	 * Shorthand method for creating an HTML form label
 	 * 
-	 * @param string $label Label Text
+	 * @param string|array $label Children
 	 * @param string $id Label ID
 	 * @param array $props Other attributes eg: `style`
 	 */
@@ -681,16 +888,15 @@ class UI {
 		}
 		$props["id"] = $id;
 		$props["for"] = $id;
-		return self::create_element("label", $props, [$label]);
+		return self::create_element("label", $props, is_array($label) ? $label : [$label]);
 	}
-	
+
 	/**
 	 * Shorthand method for creating an HTML form input
 	 * 
 	 * @param string $type Input type
 	 * @param string $name Input name
 	 * @param array $props Other attributes eg: `style` and `value`
-	 * @param string $label Input label text
 	 */
 	public static function input(string $type, string $name, array $props = []) {
 		$id = time().$type;
@@ -714,7 +920,10 @@ class UI {
 	}
 
 	/**
-	 * HTML Article Element
+	 * HTML Button Element
+	 * 
+	 * @param string $text Text displayed on button
+	 * @param array $props Button properties
 	 */
 	public static function button(string $text, array $props = []) {
 		if (!isset($props["id"])) {
@@ -724,21 +933,93 @@ class UI {
 		return self::create_element("button", $props, [$text]);
 	}
 
+	/*
+    |--------------------------------------------------------------------------
+    | Custom Leaf UI Tags
+    |--------------------------------------------------------------------------
+	*/
+
 	/**
-	 * Shorthand method for creating an HTML form element
+	 * Render uppercase text
 	 * 
-	 * @param string $method HTTP method
-	 * @param string $action Form action
-	 * @param array $fields Form Fields
-	 * @param array $props Other attributes eg: `style`
+	 * @param array|string $children Children
+	 * @param array $props Element props
 	 */
-	public static function form(string $method, string $action, array $fields, array $props = []) {
-		$id = time().$action;
+	public static function _uppercase($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."uppercase";
+			$props["id"] = $id;
+		}
+		$children = strtoupper($children);
+		return self::create_element("p", $props, is_array($children) ? $children : [$children]);
+	}
 
-		$props["action"] = $action;
-		$props["method"] = $method;
-		$props["id"] = $id;
+	/**
+	 * Render lowercase text
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
+	 */
+	public static function _lowercase(string $children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."lowercase";
+			$props["id"] = $id;
+		}
+		$children = strtolower($children);
+		return self::create_element("p", $props, is_array($children) ? $children : [$children]);
+	}
 
-		return self::create_element("form", $props, $fields);
+	/**
+	 * Custom div Element (padding container)
+	 * 
+	 * @param string|array $children Children
+	 * @param array $props Element props
+	 */
+	public static function _container($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."container";
+			$props["id"] = $id;
+		}
+		if (!isset($props["style"])) {
+			$props["style"] = "";
+		}
+		$props["style"] = "padding: 12px 25px; ".$props["style"];
+		return self::create_element("div", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
+	 * Custom div Element (flex row)
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function _row(array $children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."div";
+			$props["id"] = $id;
+		}
+		if (!isset($props["style"])) {
+			$props["style"] = "";
+		}
+		$props["style"] = "display: flex; ".$props["style"];
+		return self::create_element("div", $props, $children);
+	}
+
+	/**
+	 * Custom div Element (flex column)
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function _column(array $children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = time()."div";
+			$props["id"] = $id;
+		}
+		if (!isset($props["style"])) {
+			$props["style"] = "";
+		}
+		$props["style"] = "display: flex; flex-direction: column; ".$props["style"];
+		return self::create_element("div", $props, $children);
 	}
 }
