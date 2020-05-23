@@ -51,7 +51,7 @@ $ui = new Leaf\UI\WynterCSS;
 $html = $ui::body([
 	$ui::_container([
 		$ui::h2("Avatar"),
-		$ui::_avatar("", "MD", ["size" => "md", "presence" => "away", "badge" => "700"]),
+		$ui::_avatar("", "MD", ["size" => "xl", "presence" => "away", "badge" => "700"]),
 		$ui::hr(),
 		$ui::h2("Badge"),
 		$ui::_badge("8000", [], "Notifications"),
@@ -107,8 +107,29 @@ $html = $ui::body([
 		$ui::hr(),
 		$ui::h2("Bars"),
 		$ui::_bars([
-			$ui::_bar(["value" => "25", "tooltip" => "25 referrals"])
+			$ui::_bar(["value" => "25", "tooltip" => "25"]),
+			$ui::_bar(["value" => "25", "tooltip" => "25", "style" => "background: grey;", "show-value" => true]),
+			$ui::_bar(["value" => "40", "style" => "background: gold;", "show-value" => true]),
 		]),
+		$ui::hr(),
+		$ui::h2("Empty States"),
+		$ui::_emptyState([
+			"icon" => "mail icon-3x",
+			"title" => "You have no new messages",
+			"subtitle" => "Click the button to start a conversation",
+			"action" => [
+				$ui::_button("Send a message", ["variant" => "primary"])
+			]
+		]),
+		$ui::hr(),
+		$ui::h2("Notifications"),
+		$ui::_notify("Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
+		$ui::_notify([
+			$ui::_button("", ["class" => "btn-clear float-right"]),
+			$ui::h6("A Short Title"),
+			$ui::p("Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
+		]),
+		$ui::_notify("Lorem ipsum dolor sit amet, consectetur adipiscing elit.", ["variant" => "primary"]),
 		$ui::br(),
 		$ui::br(),
 	])

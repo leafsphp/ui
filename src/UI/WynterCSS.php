@@ -181,6 +181,29 @@ class WynterCSS extends \Leaf\UI {
 		return self::div($props, $children);
 	}
 
+	public static function _emptyState(array $props)
+	{
+		if (isset($props["action"])) {
+			$action = $props["action"];
+			unset($props["action"]);
+		}
+		if (isset($props["icon"])) {
+			$icon = $props["icon"];
+			unset($props["icon"]);
+		}
+		$props["class"] = isset($props["class"])  ? $props["class"] . " empty" : "empty";
+		return self::div($props, [
+			isset($icon) ? self::div(["class" => "empty-icon"], [
+				self::_icon($icon)
+			]) : null,
+			self::div(["class" => "empty-title h5"], $props["title"]),
+			isset($props["subtitle"]) ? self::div(["class" => "empty-subtitle"], $props["subtitle"]) : null,
+			isset($action) ? self::loop($action, function($child) {
+				return self::div(["class" => "empty-action"], $child);
+			}) : null
+		]);
+	}
+
 	public static function _fab(array $props = ["icon" => "plus"])
 	{
 		$icon = "";
@@ -205,6 +228,16 @@ class WynterCSS extends \Leaf\UI {
 			unset($props["size"]);
 		}
 		return self::i("", $props);
+	}
+
+	public static function _notify($children, array $props = [])
+	{
+		$props["class"] = isset($props["class"])  ? $props["class"] . " toast" : "toast";
+		if (isset($props["variant"])) {
+			$props["class"] .= " toast-{$props["variant"]}";
+			unset($props["variant"]);
+		}
+		return self::div($props, $children);
 	}
 
 	public static function _xCard(array $props = [], array $options = ["title" => "Card"])
