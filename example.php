@@ -34,5 +34,10 @@ $ui::render((
 				);
 			}),
 		]),
+		$ui::_row([
+			$ui::input("text", "browsers", ["list" => "browsers"]),
+			$ui::datalist("browsers", ["Firefox", "Chrome", "Safari"]),
+			$ui::_datalist("text", "browsers2", "browsers2", ["Firefox", "Chrome", "Opera", "Safari"])
+		])
 	])
 ));

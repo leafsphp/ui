@@ -920,6 +920,32 @@ class UI {
 	}
 
 	/**
+	 * Datalist element
+	 * 
+	 * @param string $id id for datalist element
+	 * @param array $list A list of datalist values
+	 * @param array $props Attributes for datalist
+	 */
+	public static function datalist(string $id, array $list, array $props = []) {
+		$props["id"] = $id;
+		return self::create_element("datalist", $props, self::loop($list, function($value) {
+			return self::option($value);
+		}));
+	}
+
+	/**
+	 * Option Tag
+	 * 
+	 * @param string $value Value property
+	 * @param string $text Text displayed to the user
+	 * @param array $props Additional props
+	 */
+	public static function option(string $value, string $text = "", array $props = []) {
+		$props["value"] = $value;
+		return self::create_element("option", $props, $text);
+	}
+
+	/**
 	 * HTML Button Element
 	 * 
 	 * @param string $text Text displayed on button
@@ -1021,5 +1047,21 @@ class UI {
 		}
 		$props["style"] = "display: flex; flex-direction: column; ".$props["style"];
 		return self::create_element("div", $props, $children);
+	}
+
+	/**
+	 * Custom Datalist element
+	 * 
+	 * @param string $type input type
+	 * @param string $name input name
+	 * @param string $id id for datalist element
+	 * @param array $list A list of datalist values
+	 * @param array $props Attributes for datalist wrapper
+	 */
+	public static function _datalist(string $type, string $name, string $id, array $list, array $props = []) {
+		return self::div($props, [
+			self::input($type, $name, ["list" => $id]),
+			self::datalist($id, $list)
+		]);
 	}
 }
