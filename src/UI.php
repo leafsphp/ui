@@ -246,7 +246,7 @@ class UI {
 		return self::create_element("link", $props, [], self::SINGLE_TAG);
 	}
 
-	public static function _vendor($file) {
+	public static function _vendor($file = null) {
 		return "vendor\\leafs\\ui\\src\\UI\\$file";
 	}
 

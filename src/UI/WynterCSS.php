@@ -16,9 +16,9 @@ class WynterCSS extends \Leaf\UI {
 	public static function render($element, $inject = null) {
 		parent::render(
 			$inject
-			.self::_style("src/UI/WynterCSS/wynter.css")
-			.self::_style("src/UI/WynterCSS/wynter-exp.css")
-			.self::_style("src/UI/WynterCSS/wynter-icons.css")
+			.self::_style(self::_vendor("WynterCSS/wynter.css"))
+			.self::_style(self::_vendor("WynterCSS/wynter-exp.css"))
+			.self::_style(self::_vendor("WynterCSS/wynter-icons.css"))
 			.$element
 		);
 	}
