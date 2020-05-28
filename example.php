@@ -38,6 +38,12 @@ $ui::render((
 			$ui::input("text", "browsers", ["list" => "browsers"]),
 			$ui::datalist("browsers", ["Firefox", "Chrome", "Safari"]),
 			$ui::_datalist("text", "browsers2", "browsers2", ["Firefox", "Chrome", "Opera", "Safari"])
+		]),
+		$ui::_row([
+			$ui::_fieldset("Gender", [
+				$ui::input("radio", "gender", ["value" => "male", "label" => "Male"]),
+				$ui::input("radio", "gender", ["value" => "female", "label" => "Female"]),
+			])
 		])
 	])
 ));
