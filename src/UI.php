@@ -757,10 +757,7 @@ class UI {
 	 * @param array $props Other attributes eg: `style`
 	 */
 	public static function label(string $label, string $id = null, array $props = []) {
-		if (!$id) {
-			$id = self::random_id().$label;
-		}
-		$props["id"] = $id;
+		$props["id"] = isset($props["id"]) ? $props["id"] : self::random_id("label");
 		$props["for"] = $id;
 		return self::create_element("label", $props, is_array($label) ? $label : [$label]);
 	}
@@ -773,11 +770,11 @@ class UI {
 	 * @param array $props Other attributes eg: `style` and `value`
 	 */
 	public static function input(string $type, string $name, array $props = []) {
-		$id = self::random_id().$type;
+		$props["id"] = !isset($props["id"]) ? self::random_id($type) : $props["id"];
 		$output = "";
 
 		if (!empty($props) && isset($props['label'])) {
-			$output .= self::label($props['label'], $id);
+			$output .= self::label($props['label'], $props["id"]);
 		}
 
 		$props["type"] = $type;
@@ -927,6 +924,7 @@ class UI {
 	 * @param array $props Element properties
 	 */
 	public static function _fieldset(string $name, array $children, array $props = []) {
+		$props["id"] = isset($props["id"]) ? $props["id"] : self::random_id("fieldset");
 		$el = [self::legend($name)];
 		foreach ($children as $child) {
 			$el[] = $child;
