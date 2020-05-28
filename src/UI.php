@@ -948,4 +948,18 @@ class UI {
 		}
 		return self::fieldset($el, $props);
 	}
+
+	/**
+	 * Custom select element
+	 * 
+	 * @param array $options Select Options
+	 * @param array $props Element props
+	 */
+	public static function _select(array $options, array $props = []) {
+		$els = [];
+		foreach ($options as $key => $value) {
+			$els[] = self::option($key, $value);
+		}
+		return self::create_element("select", $props, $els);
+	}
 }

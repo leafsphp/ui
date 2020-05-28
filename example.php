@@ -44,6 +44,11 @@ $ui::render((
 				$ui::input("radio", "gender", ["value" => "male", "label" => "Male"]),
 				$ui::input("radio", "gender", ["value" => "female", "label" => "Female"]),
 			])
+		]),
+		$ui::_select([
+			"ferrari" => "Ferrari",
+			"mercedes" => "Mercedes",
+			"porsche" => "Porsche",
 		])
 	])
 ));
