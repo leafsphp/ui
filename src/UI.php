@@ -959,6 +959,16 @@ class UI {
 		return self::create_element("button", $props, [$text]);
 	}
 
+	/**
+	 * HTML Fieldset Element
+	 * 
+	 * @param array|string $children Element children
+	 * @param array $props Element properties
+	 */
+	public static function fieldset($children, array $props = []) {
+		return self::create_element("fieldset", $props, $children);
+	}
+
 	/*
     |--------------------------------------------------------------------------
     | Custom Leaf UI Tags
