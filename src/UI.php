@@ -828,6 +828,18 @@ class UI {
 	}
 
 	/**
+	 * OptionGroup Tag
+	 * 
+	 * @param string $label Optgroup label
+	 * @param string $text Text displayed to the user
+	 * @param array $props Additional props
+	 */
+	public static function optgroup(string $label, array $children = [], array $props = []) {
+		$props["label"] = $label;
+		return self::create_element("option", $props, $children);
+	}
+
+	/**
 	 * HTML Button Element
 	 * 
 	 * @param string $text Text displayed on button
