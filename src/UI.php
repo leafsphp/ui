@@ -770,6 +770,16 @@ class UI {
 	}
 
 	/**
+	 * Html select element
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function select(array $children, array $props = []) {
+		return self::create_element("select", $props, $children);
+	}
+
+	/**
 	 * Shorthand method for creating an HTML form input
 	 * 
 	 * @param string $type Input type
