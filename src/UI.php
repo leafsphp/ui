@@ -628,16 +628,6 @@ class UI {
 	}
 
 	/**
-	 * legend tag
-	 * 
-	 * @param array $children Children
-	 * @param array $props Element props
-	 */
-	public static function legend($children, array $props = []) {
-		return self::create_element("legend", $props, is_array($children) ? $children : [$children]);
-	}
-
-	/**
 	 * b tag
 	 * 
 	 * @param array $children Children
@@ -757,6 +747,26 @@ class UI {
 		$props["id"] = isset($props["id"]) ? $props["id"] : self::random_id("label");
 		$props["for"] = $id;
 		return self::create_element("label", $props, is_array($label) ? $label : [$label]);
+	}
+
+	/**
+	 * legend tag
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function legend($children, array $props = []) {
+		return self::create_element("legend", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
+	 * Html textarea element
+	 * 
+	 * @param array $props Element props
+	 * @param array|string $children Children
+	 */
+	public static function textarea(array $props = [], $children = "") {
+		return self::create_element("textarea", $props, is_array($children) ? $children : [$children]);
 	}
 
 	/**
