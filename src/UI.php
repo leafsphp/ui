@@ -732,6 +732,20 @@ class UI {
 	}
 
 	/**
+	 * legend tag
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function legend($children, array $props = []) {
+		if (!isset($props["id"])) {
+			$id = self::random_id()."legend";
+			$props["id"] = $id;
+		}
+		return self::create_element("legend", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
 	 * b tag
 	 * 
 	 * @param array $children Children
@@ -969,7 +983,6 @@ class UI {
 		return self::create_element("fieldset", $props, $children);
 	}
 	
-
 	/*
     |--------------------------------------------------------------------------
     | Custom Leaf UI Tags
@@ -1074,5 +1087,18 @@ class UI {
 			self::input($type, $name, ["list" => $id]),
 			self::datalist($id, $list)
 		]);
+	}
+
+	/**
+	 * Custom Fieldset Element
+	 * 
+	 * @param string $name The title of the fieldset element
+	 * @param array|string $children Element children
+	 * @param array $props Element properties
+	 */
+	public static function _fieldset(string $name, $children, array $props = []) {
+		$el = [$name];
+		$el[] = $children;
+		return self::create_element("fieldset", $props, $el);
 	}
 }
