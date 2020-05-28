@@ -740,11 +740,8 @@ class UI {
 	 * @param array $props Other attributes eg: `style`
 	 */
 	public static function form(string $method, string $action, array $fields, array $props = []) {
-		$id = self::random_id().$action;
-
 		$props["action"] = $action;
 		$props["method"] = $method;
-		$props["id"] = $id;
 
 		return self::create_element("form", $props, $fields);
 	}
