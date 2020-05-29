@@ -49,6 +49,16 @@ $ui::render((
 			"ferrari" => "Ferrari",
 			"mercedes" => "Mercedes",
 			"porsche" => "Porsche",
-		])
+		]),
+		$ui::select([
+			$ui::_optgroup("Sports Cars", [
+				"ferrari" => "Ferrari",
+				"porsche" => "Porsche",
+			]),
+			$ui::_optgroup("Sports Cars", [
+				"mercedes" => "Mercedes",
+				"bently" => "Bently",
+			])
+		]),
 	])
 ));

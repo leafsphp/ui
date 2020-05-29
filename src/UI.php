@@ -831,12 +831,12 @@ class UI {
 	 * OptionGroup Tag
 	 * 
 	 * @param string $label Optgroup label
-	 * @param string $text Text displayed to the user
+	 * @param string $children Element children
 	 * @param array $props Additional props
 	 */
 	public static function optgroup(string $label, array $children = [], array $props = []) {
 		$props["label"] = $label;
-		return self::create_element("option", $props, $children);
+		return self::create_element("optgroup", $props, $children);
 	}
 
 	/**
@@ -973,5 +973,20 @@ class UI {
 			$els[] = self::option($key, $value);
 		}
 		return self::create_element("select", $props, $els);
+	}
+
+	/**
+	 * custom OptionGroup Tag
+	 * 
+	 * @param string $label Optgroup label
+	 * @param string $children Element children
+	 * @param array $props Additional props
+	 */
+	public static function _optgroup(string $label, array $children = [], array $props = []) {
+		return self::optgroup($label, [
+			self::loop($children, function($value, $key) {
+				return self::option($key, $value);
+			})
+		]);
 	}
 }
