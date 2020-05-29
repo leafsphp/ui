@@ -858,6 +858,29 @@ class UI {
 	public static function fieldset(array $children, array $props = []) {
 		return self::create_element("fieldset", $props, $children);
 	}
+
+	/**
+	 * Html Meter Element
+	 * 
+	 * @param string $value Current Meter "level"
+	 * @param string|array $children Children
+	 * @param array $props Any additional props
+	 */
+	public static function meter(string $value, $children = "", array $props = []) {
+		$props["value"] = $value;
+		return self::create_element("meter", $props, $children);
+	}
+
+	/**
+	 * Html keygen element
+	 * 
+	 * @param string $name Keygen element name prop
+	 * @param array $props Other props
+	 */
+	public static function keygen(string $name, array $props = []) {
+		$props["name"] = $name;
+		return self::create_element("keygen", $props);
+	}
 	
 	/*
     |--------------------------------------------------------------------------

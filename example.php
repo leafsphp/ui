@@ -60,5 +60,11 @@ $ui::render((
 				"bently" => "Bently",
 			])
 		]),
+		$ui::_row([
+			$ui::meter("0.8", "80%"),
+			$ui::meter("6", "6/10", ["min" => "0", "max" => "10"]),
+			$ui::meter("80", "very high", ["low" => "60", "high" => "80", "max" => "100"]),
+		]),
+		$ui::keygen("key")
 	])
 ));
