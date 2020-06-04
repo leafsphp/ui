@@ -742,6 +742,26 @@ class UI {
 	}
 
 	/**
+	 * bdi tag
+	 * 
+	 * @param string $children Children
+	 * @param array $props Element props
+	 */
+	public static function bdi(string $children, array $props = []) {
+		return self::create_element("bdi", $props, $children);
+	}
+
+	/**
+	 * bdo tag
+	 * 
+	 * @param string $children Children
+	 * @param array $props Element props
+	 */
+	public static function bdo(string $children, array $props = []) {
+		return self::create_element("bdo", $props, $children);
+	}
+
+	/**
 	 * b tag
 	 * 
 	 * @param array|string $children Children
@@ -779,6 +799,16 @@ class UI {
 	 */
 	public static function small($children, array $props = []) {
 		return self::create_element("small", $props, is_array($children) ? $children : [$children]);
+	}
+
+	/**
+	 * big tag
+	 * 
+	 * @param array|string $children Children
+	 * @param array $props Element props
+	 */
+	public static function big($children, array $props = []) {
+		return self::create_element("big", $props, is_array($children) ? $children : [$children]);
 	}
 
 	/**
