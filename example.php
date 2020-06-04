@@ -43,6 +43,7 @@ $ui::render((
 		$ui::select([
 			"BTC" => "Bitcoin",
 			"ETH" => "Ethereum"
-		])
+		]),
+		$ui::abbr("Hyper TextMarkup Language", "HTML")
 	])
 ));

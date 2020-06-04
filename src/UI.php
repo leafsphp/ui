@@ -720,13 +720,25 @@ class UI {
 	}
 
 	/**
-	 * abbr tag
+	 * abbr element
 	 * 
-	 * @param array|string $children Children
+	 * @param string $title Long Text
+	 * @param string $children Short Text
 	 * @param array $props Element props
 	 */
-	public static function abbr($children, array $props = []) {
-		return self::create_element("abbr", $props, is_array($children) ? $children : [$children]);
+	public static function abbr(string $title, string $children, array $props = []) {
+		$props["title"] = $title;
+		return self::create_element("abbr", $props, $children);
+	}
+
+	/**
+	 * HTML address Element 
+	 * 
+	 * @param array $children Children
+	 * @param array $props Element props
+	 */
+	public static function address(array $children, array $props = []) {
+		return self::create_element("address", $props, $children);
 	}
 
 	/**
