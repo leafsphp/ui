@@ -437,7 +437,7 @@ class UI {
 			$id = self::random_id()."a";
 			$props["id"] = $id;
 		}
-		return self::create_element("a", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("a", $props, $children);
 	}
 
 	/**
@@ -451,7 +451,7 @@ class UI {
 			$id = self::random_id()."div";
 			$props["id"] = $id;
 		}
-		return self::create_element("div", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("div", $props, $children);
 	}
 
 	/**
@@ -465,7 +465,7 @@ class UI {
 			$id = self::random_id()."span";
 			$props["id"] = $id;
 		}
-		return self::create_element("span", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("span", $props, $children);
 	}
 
 	/**
@@ -493,7 +493,7 @@ class UI {
 			$id = self::random_id()."hgroup";
 			$props["id"] = $id;
 		}
-		return self::create_element("hgroup", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("hgroup", $props, $children);
 	}
 
 	/**
@@ -507,7 +507,7 @@ class UI {
 			$id = self::random_id()."h1";
 			$props["id"] = $id;
 		}
-		return self::create_element("h1", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("h1", $props, $children);
 	}
 
 	/**
@@ -521,7 +521,7 @@ class UI {
 			$id = self::random_id()."h2";
 			$props["id"] = $id;
 		}
-		return self::create_element("h2", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("h2", $props, $children);
 	}
 
 	/**
@@ -535,7 +535,7 @@ class UI {
 			$id = self::random_id()."h3";
 			$props["id"] = $id;
 		}
-		return self::create_element("h3", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("h3", $props, $children);
 	}
 
 	/**
@@ -549,7 +549,7 @@ class UI {
 			$id = self::random_id()."h4";
 			$props["id"] = $id;
 		}
-		return self::create_element("h4", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("h4", $props, $children);
 	}
 
 	/**
@@ -563,7 +563,7 @@ class UI {
 			$id = self::random_id()."h5";
 			$props["id"] = $id;
 		}
-		return self::create_element("h5", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("h5", $props, $children);
 	}
 
 	/**
@@ -577,7 +577,7 @@ class UI {
 			$id = self::random_id()."h6";
 			$props["id"] = $id;
 		}
-		return self::create_element("h6", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("h6", $props, $children);
 	}
 
 	/**
@@ -591,7 +591,7 @@ class UI {
 			$id = self::random_id()."blockquote";
 			$props["id"] = $id;
 		}
-		return self::create_element("blockquote", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("blockquote", $props, $children);
 	}
 
 	/**
@@ -605,7 +605,7 @@ class UI {
 			$id = self::random_id()."p";
 			$props["id"] = $id;
 		}
-		return self::create_element("p", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("p", $props, $children);
 	}
 
 	/**
@@ -716,7 +716,7 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function tt($children, array $props = []) {
-		return self::create_element("tt", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("tt", $props, $children);
 	}
 
 	/**
@@ -768,7 +768,7 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function b($children, array $props = []) {
-		return self::create_element("b", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("b", $props, $children);
 	}
 
 	/**
@@ -778,7 +778,7 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function i($children, array $props = []) {
-		return self::create_element("i", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("i", $props, $children);
 	}
 
 	/**
@@ -788,7 +788,7 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function u($children, array $props = []) {
-		return self::create_element("u", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("u", $props, $children);
 	}
 
 	/**
@@ -798,7 +798,7 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function small($children, array $props = []) {
-		return self::create_element("small", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("small", $props, $children);
 	}
 
 	/**
@@ -808,7 +808,7 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function big($children, array $props = []) {
-		return self::create_element("big", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("big", $props, $children);
 	}
 
 	/**
@@ -819,7 +819,7 @@ class UI {
 	 */
 	public static function sub($children, array $props = [])
 	{
-		return self::create_element("sub", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("sub", $props, $children);
 	}
 
 	/**
@@ -829,7 +829,7 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function sup($children, array $props = []) {
-		return self::create_element("sup", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("sup", $props, $children);
 	}
 
 	/*
@@ -1022,7 +1022,7 @@ class UI {
 			$props["id"] = $id;
 		}
 		$children = strtoupper($children);
-		return self::create_element("p", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("p", $props, $children);
 	}
 
 	/**
@@ -1037,7 +1037,7 @@ class UI {
 			$props["id"] = $id;
 		}
 		$children = strtolower($children);
-		return self::create_element("p", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("p", $props, $children);
 	}
 
 	/**
@@ -1055,7 +1055,7 @@ class UI {
 			$props["style"] = "";
 		}
 		$props["style"] = "padding: 12px 25px; ".$props["style"];
-		return self::create_element("div", $props, is_array($children) ? $children : [$children]);
+		return self::create_element("div", $props, $children);
 	}
 
 	/**
