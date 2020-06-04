@@ -316,10 +316,6 @@ class UI {
 	 * @param array $props Attributes for HTML element
 	 */
 	public static function html(array $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."html";
-			$props["id"] = $id;
-		}
 		return self::create_element("!Doctype html", [], [], self::SINGLE_TAG).self::create_element("html", $props, $children);
 	}
 
@@ -330,10 +326,6 @@ class UI {
 	 * @param array $props Attributes for Head element
 	 */
 	public static function head(array $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."head";
-			$props["id"] = $id;
-		}
 		return self::create_element("head", $props, $children);
 	}
 
@@ -344,10 +336,6 @@ class UI {
 	 * @param array $props Attributes for body element
 	 */
 	public static function body(array $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."body";
-			$props["id"] = $id;
-		}
 		return self::create_element("body", $props, $children);
 	}
 
@@ -358,10 +346,6 @@ class UI {
 	 * @param array $children header Element children
 	 */
 	public static function header(array $props = [], array $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."header";
-			$props["id"] = $id;
-		}
 		return self::create_element("header", $props, $children);
 	}
 
@@ -373,10 +357,6 @@ class UI {
 	 */
 	public static function nav(array $props = [], array $children = [])
 	{
-		if (!isset($props["id"])) {
-			$id = self::random_id() . "nav";
-			$props["id"] = $id;
-		}
 		return self::create_element("nav", $props, $children);
 	}
 
@@ -387,10 +367,6 @@ class UI {
 	 * @param array $children footer Element children
 	 */
 	public static function footer(array $props = [], array $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."footer";
-			$props["id"] = $id;
-		}
 		return self::create_element("footer", $props, $children);
 	}
 
@@ -401,10 +377,6 @@ class UI {
 	 * @param array $children aside Element children
 	 */
 	public static function aside(array $props = [], array $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."aside";
-			$props["id"] = $id;
-		}
 		return self::create_element("aside", $props, $children);
 	}
 
@@ -433,10 +405,6 @@ class UI {
 	 * @param string|array $children Children
 	 */
 	public static function a(array $props = [], $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."a";
-			$props["id"] = $id;
-		}
 		return self::create_element("a", $props, $children);
 	}
 
@@ -447,10 +415,6 @@ class UI {
 	 * @param string|array $children Children
 	 */
 	public static function div(array $props = [], $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."div";
-			$props["id"] = $id;
-		}
 		return self::create_element("div", $props, $children);
 	}
 
@@ -461,10 +425,6 @@ class UI {
 	 * @param string|array $children Children
 	 */
 	public static function span(array $props = [], $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."span";
-			$props["id"] = $id;
-		}
 		return self::create_element("span", $props, $children);
 	}
 
@@ -475,10 +435,6 @@ class UI {
 	 * @param string|array $children Children
 	 */
 	public static function section(array $props = [], array $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."section";
-			$props["id"] = $id;
-		}
 		return self::create_element("section", $props, $children);
 	}
 
@@ -489,10 +445,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function hgroup($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."hgroup";
-			$props["id"] = $id;
-		}
 		return self::create_element("hgroup", $props, $children);
 	}
 
@@ -503,10 +455,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function h1($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."h1";
-			$props["id"] = $id;
-		}
 		return self::create_element("h1", $props, $children);
 	}
 
@@ -517,10 +465,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function h2($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."h2";
-			$props["id"] = $id;
-		}
 		return self::create_element("h2", $props, $children);
 	}
 
@@ -531,10 +475,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function h3($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."h3";
-			$props["id"] = $id;
-		}
 		return self::create_element("h3", $props, $children);
 	}
 
@@ -545,10 +485,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function h4($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."h4";
-			$props["id"] = $id;
-		}
 		return self::create_element("h4", $props, $children);
 	}
 
@@ -559,10 +495,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function h5($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."h5";
-			$props["id"] = $id;
-		}
 		return self::create_element("h5", $props, $children);
 	}
 
@@ -573,10 +505,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function h6($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."h6";
-			$props["id"] = $id;
-		}
 		return self::create_element("h6", $props, $children);
 	}
 
@@ -587,10 +515,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function blockquote($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."blockquote";
-			$props["id"] = $id;
-		}
 		return self::create_element("blockquote", $props, $children);
 	}
 
@@ -601,10 +525,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function p($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."p";
-			$props["id"] = $id;
-		}
 		return self::create_element("p", $props, $children);
 	}
 
@@ -615,10 +535,6 @@ class UI {
 	 * @param array $children Children
 	 */
 	public static function article(array $props = [], array $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."article";
-			$props["id"] = $id;
-		}
 		return self::create_element("article", $props, $children);
 	}
 
@@ -629,10 +545,6 @@ class UI {
 	 * @param array $children Children
 	 */
 	public static function details(array $props = [], array $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."details";
-			$props["id"] = $id;
-		}
 		return self::create_element("details", $props, $children);
 	}
 
@@ -643,10 +555,6 @@ class UI {
 	 * @param array $children Children
 	 */
 	public static function summary(array $props = [], array $children = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id() . "summary";
-			$props["id"] = $id;
-		}
 		return self::create_element("summary", $props, $children);
 	}
 
@@ -997,10 +905,6 @@ class UI {
 	 * @param array $props Button properties
 	 */
 	public static function button(string $text, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."button";
-			$props["id"] = $id;
-		}
 		return self::create_element("button", $props, [$text]);
 	}
 
@@ -1017,10 +921,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function _uppercase($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."uppercase";
-			$props["id"] = $id;
-		}
 		$children = strtoupper($children);
 		return self::create_element("p", $props, $children);
 	}
@@ -1032,10 +932,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function _lowercase(string $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."lowercase";
-			$props["id"] = $id;
-		}
 		$children = strtolower($children);
 		return self::create_element("p", $props, $children);
 	}
@@ -1047,10 +943,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function _container($children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."container";
-			$props["id"] = $id;
-		}
 		if (!isset($props["style"])) {
 			$props["style"] = "";
 		}
@@ -1065,10 +957,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function _row(array $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."div";
-			$props["id"] = $id;
-		}
 		if (!isset($props["style"])) {
 			$props["style"] = "";
 		}
@@ -1083,10 +971,6 @@ class UI {
 	 * @param array $props Element props
 	 */
 	public static function _column(array $children, array $props = []) {
-		if (!isset($props["id"])) {
-			$id = self::random_id()."div";
-			$props["id"] = $id;
-		}
 		if (!isset($props["style"])) {
 			$props["style"] = "";
 		}
