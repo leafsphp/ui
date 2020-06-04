@@ -45,7 +45,7 @@ class UI {
 		$type = strtolower($type);
 		$attributes = "";
 		$subs = "";
-		$id = self::random_id() . $element;
+		$id = self::random_id($element);
 
 		if (is_array($children)) {
 			foreach ($children as $child) {
@@ -908,7 +908,7 @@ class UI {
 			$id = $props["id"];
 		}
 
-		if (!empty($props) && isset($props['label'])) {
+		if (isset($props['label'])) {
 			$output .= self::label($props['label'], $id);
 		}
 
@@ -916,6 +916,34 @@ class UI {
 		$props["name"] = $name;
 
 		$output .= self::create_element("input", $props, []);
+		return $output;
+	}
+
+	/**
+	 * HTML Textarea component
+	 * 
+	 * @param string $name textarea name
+	 * @param array $props Other attributes eg: `style` and `value`
+	 * @param string $children Textarea text
+	 */
+	public static function textarea(string $name, array $props = [], string $children = "") {
+		$id = self::random_id($name);
+		$output = "";
+
+		if (!isset($props["id"])) {
+			$props["id"] = $id;
+		} else {
+			$id = $props["id"];
+		}
+
+		if (isset($props['label'])) {
+			$output .= self::label($props['label'], $id);
+			unset($props["label"]);
+		}
+
+		$props["name"] = $name;
+
+		$output .= self::create_element("textarea", $props, [$children]);
 		return $output;
 	}
 
@@ -930,6 +958,18 @@ class UI {
 		$props["id"] = $id;
 		return self::create_element("datalist", $props, self::loop($list, function($value) {
 			return self::option($value);
+		}));
+	}
+
+	/**
+	 * HTML Select element
+	 * 
+	 * @param array $list A list of datalist values
+	 * @param array $props Attributes for datalist
+	 */
+	public static function select(array $list, array $props = []) {
+		return self::create_element("select", $props, self::loop($list, function($text, $value) {
+			return self::option($value, $text);
 		}));
 	}
 

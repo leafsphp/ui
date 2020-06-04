@@ -38,6 +38,11 @@ $ui::render((
 			$ui::input("text", "browsers", ["list" => "browsers"]),
 			$ui::datalist("browsers", ["Firefox", "Chrome", "Safari"]),
 			$ui::_datalist("text", "browsers2", "browsers2", ["Firefox", "Chrome", "Opera", "Safari"])
+		]),
+		$ui::textarea("article"),
+		$ui::select([
+			"BTC" => "Bitcoin",
+			"ETH" => "Ethereum"
 		])
 	])
 ));
