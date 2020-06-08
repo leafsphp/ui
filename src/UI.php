@@ -1113,10 +1113,11 @@ class UI
 					display: flex !important;
 					justify-content: center !important;
 					align-items: center !important;
+					flex-direction: column;
 					background: white;
 				",
 				"#{$props['id']} > *" => "
-					width: 100px !important;
+					width: 100px;
 				",
 				"#{$props['id']}.hidden" => "
 					animation: fadeOut 1.5s !important;
