@@ -204,6 +204,19 @@ class UI
 	}
 
 	/**
+	 * Join multiple elements
+	 * 
+	 * @param mixed $elements Elements to merge
+	 */
+	public static function merge(...$elements) {
+		$data = "";
+		foreach ($elements as $el) {
+			$data .= $el;
+		}
+		return $data;
+	}
+
+	/**
 	 * Generate a random id
 	 *
 	 * @param string $element An html element name to append to id
@@ -982,7 +995,7 @@ class UI
 	/**
 	 * Render uppercase text
 	 * 
-	 * @param array|string $children Children
+	 * @param string $children Children
 	 * @param array $props Element props
 	 */
 	public static function _uppercase($children, array $props = [])
@@ -994,7 +1007,7 @@ class UI
 	/**
 	 * Render lowercase text
 	 * 
-	 * @param string|array $children Children
+	 * @param string $children Children
 	 * @param array $props Element props
 	 */
 	public static function _lowercase(string $children, array $props = [])
@@ -1063,5 +1076,14 @@ class UI
 			self::input($type, $name, ["list" => $id]),
 			self::datalist($id, $list)
 		]);
+	}
+
+	/**
+	 * Custom preloader component
+	 * 
+	 * @param string|array $children Item to display as preloader
+	 */
+	public static function _preloader($children) {
+		return self::merge();
 	}
 }

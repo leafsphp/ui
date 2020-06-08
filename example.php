@@ -47,3 +47,6 @@ $ui::render((
 		$ui::abbr("Hyper TextMarkup Language", "HTML")
 	])
 ));
+
+
+$ui::render($ui::merge($ui::p("Something"), $ui::p("Here")));
