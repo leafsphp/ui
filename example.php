@@ -48,6 +48,6 @@ $ui::render((
 	])
 ));
 
-
 $ui::render($ui::merge($ui::p("Something"), $ui::p("Here")));
 $ui::render($ui::_fragment([$ui::p("Something"), $ui::p("Here")]));
+$ui::render($ui::_preloader($ui::p("Loading...")));

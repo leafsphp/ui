@@ -1097,8 +1097,45 @@ class UI
 	 * Custom preloader component
 	 * 
 	 * @param string|array $children Item to display as preloader
+	 * @param array $props Preloader properties
 	 */
-	public static function _preloader($children) {
-		return self::merge();
+	public static function _preloader($children, array $props = []) {
+		if (!isset($props["id"])) $props["id"] = "leaf-ui-preloader";
+		return self::_fragment([
+			self::_style([
+				"#{$props['id']}" => "
+					position: fixed !important;
+					z-index: 1000 !important;
+					top: 0 !important;
+					left: 0 !important;
+					width: 100% !important;
+					height: 100% !important;
+					display: flex !important;
+					justify-content: center !important;
+					align-items: center !important;
+					background: white;
+				",
+				"#{$props['id']} > *" => "
+					width: 100px !important;
+				",
+				"#{$props['id']}.hidden" => "
+					animation: fadeOut 1.5s !important;
+					animation-fill-mode: forwards !important;
+				",
+				"@keyframes fadeOut" => [
+					"100%" => "
+						opacity: 0;
+						visibility: hidden;
+					"
+				]
+			]),
+			self::div($props, $children),
+			self::_script(["
+				window.addEventListener('load', function() {
+					const leafUILoader = document.getElementById('{$props['id']}');
+					leafUILoader.className += ' hidden';
+				});
+			"])
+		]);
 	}
 }
