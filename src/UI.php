@@ -294,6 +294,21 @@ class UI
 	}
 
 	/**
+	 * Fragment Component.
+	 * Literally does nothing. It just serves as an invisible container for your elements. 
+	 * (It doesn't render unto the DOM.)
+	 * 
+	 * @param array $children Children
+	 */
+	public static function _fragment(array $children) {
+		$els = "";
+		$els .= self::loop($children, function($child) {
+			return $child;
+		});
+		return $els;
+	}
+
+	/**
 	 * Return Leaf UI's vendor path
 	 * 
 	 * @param string $file A file/path to append to vendor path
