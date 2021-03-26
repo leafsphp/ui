@@ -7,6 +7,47 @@ use Leaf\UI;
 | Structural HTML Tags
 |--------------------------------------------------------------------------
 */
+
+/**
+ * Import/Use a styleheet
+ * 
+ * @param string|array $src The styles/stylesheet to apply
+ * @param array $props The attributes for style/link tag
+ */
+function Style($src, array $props = [])
+{
+    if (!is_array($src)) {
+        return UI::createElement("link", ["href" => $src, "rel" => "stylesheet"], UI::SINGLE_TAG);
+    }
+
+    return UI::createStyles($src, $props);
+}
+
+/**
+ * Import/Use a script
+ * 
+ * @param string|array $src The internal/external scripts to apply
+ * @param array $props The attributes for style/link tag
+ */
+function Script($src, array $props = [])
+{
+    if (is_string($src)) {
+        $props["src"] = $src;
+        return UI::createElement("script", $props);
+    }
+
+    return UI::createElement("script", array_merge(
+        $props,
+        ["children" => $src]
+    ));
+}
+
+/*
+|--------------------------------------------------------------------------
+| Structural HTML Tags
+|--------------------------------------------------------------------------
+*/
+
 /**
  * HTML Element
  * 
@@ -16,7 +57,8 @@ use Leaf\UI;
 function html(array $children, array $props = [])
 {
     return UI::createElement("!Doctype html", [], UI::SINGLE_TAG) . UI::createElement("html", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -29,7 +71,8 @@ function html(array $children, array $props = [])
 function head(array $children, array $props = [])
 {
     return UI::createElement("head", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -42,7 +85,8 @@ function head(array $children, array $props = [])
 function body(array $children, array $props = [])
 {
     return UI::createElement("body", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -55,7 +99,8 @@ function body(array $children, array $props = [])
 function _header(array $children = [], array $props = [])
 {
     return UI::createElement("header", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -68,7 +113,8 @@ function _header(array $children = [], array $props = [])
 function nav(array $children = [], array $props = [])
 {
     return UI::createElement("nav", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -81,7 +127,8 @@ function nav(array $children = [], array $props = [])
 function footer(array $children = [], array $props = [])
 {
     return UI::createElement("footer", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -94,7 +141,8 @@ function footer(array $children = [], array $props = [])
 function aside(array $children = [], array $props = [])
 {
     return UI::createElement("aside", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -127,7 +175,8 @@ function hr(array $props = [])
 function a(array $props = [], $children = [])
 {
     return UI::createElement("a", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -182,7 +231,8 @@ function li(array $props = [], $children = [])
 function div(array $props = [], $children = [])
 {
     return UI::createElement("div", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -195,7 +245,8 @@ function div(array $props = [], $children = [])
 function span(array $props = [], $children = [])
 {
     return UI::createElement("span", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -208,7 +259,8 @@ function span(array $props = [], $children = [])
 function section(array $props = [], array $children = [])
 {
     return UI::createElement("section", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -221,7 +273,8 @@ function section(array $props = [], array $children = [])
 function hgroup($children, array $props = [])
 {
     return UI::createElement("hgroup", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -234,7 +287,8 @@ function hgroup($children, array $props = [])
 function h1($children, array $props = [])
 {
     return UI::createElement("h1", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -247,7 +301,8 @@ function h1($children, array $props = [])
 function h2($children, array $props = [])
 {
     return UI::createElement("h2", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -260,7 +315,8 @@ function h2($children, array $props = [])
 function h3($children, array $props = [])
 {
     return UI::createElement("h3", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -273,7 +329,8 @@ function h3($children, array $props = [])
 function h4($children, array $props = [])
 {
     return UI::createElement("h4", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -286,7 +343,8 @@ function h4($children, array $props = [])
 function h5($children, array $props = [])
 {
     return UI::createElement("h5", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -299,7 +357,8 @@ function h5($children, array $props = [])
 function h6($children, array $props = [])
 {
     return UI::createElement("h6", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -312,7 +371,8 @@ function h6($children, array $props = [])
 function blockquote($children, array $props = [])
 {
     return UI::createElement("blockquote", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -325,7 +385,8 @@ function blockquote($children, array $props = [])
 function p($children, array $props = [])
 {
     return UI::createElement("p", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -338,7 +399,8 @@ function p($children, array $props = [])
 function article(array $props = [], array $children = [])
 {
     return UI::createElement("article", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -351,7 +413,8 @@ function article(array $props = [], array $children = [])
 function details(array $props = [], array $children = [])
 {
     return UI::createElement("details", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -364,7 +427,8 @@ function details(array $props = [], array $children = [])
 function summary(array $props = [], array $children = [])
 {
     return UI::createElement("summary", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -444,7 +508,8 @@ function meta(string $name, string $content, array $props = [])
 function tt($children, array $props = [])
 {
     return UI::createElement("tt", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -459,7 +524,8 @@ function abbr(string $title, string $children, array $props = [])
 {
     $props["title"] = $title;
     return UI::createElement("abbr", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -472,7 +538,8 @@ function abbr(string $title, string $children, array $props = [])
 function address(array $children, array $props = [])
 {
     return UI::createElement("address", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -485,7 +552,8 @@ function address(array $children, array $props = [])
 function bdi(string $children, array $props = [])
 {
     return UI::createElement("bdi", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -498,7 +566,8 @@ function bdi(string $children, array $props = [])
 function bdo(string $children, array $props = [])
 {
     return UI::createElement("bdo", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -511,7 +580,8 @@ function bdo(string $children, array $props = [])
 function b($children, array $props = [])
 {
     return UI::createElement("b", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -524,7 +594,8 @@ function b($children, array $props = [])
 function i($children, array $props = [])
 {
     return UI::createElement("i", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -537,7 +608,8 @@ function i($children, array $props = [])
 function u($children, array $props = [])
 {
     return UI::createElement("u", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -550,7 +622,8 @@ function u($children, array $props = [])
 function small($children, array $props = [])
 {
     return UI::createElement("small", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -563,7 +636,8 @@ function small($children, array $props = [])
 function big($children, array $props = [])
 {
     return UI::createElement("big", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -576,7 +650,8 @@ function big($children, array $props = [])
 function sub($children, array $props = [])
 {
     return UI::createElement("sub", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -589,7 +664,8 @@ function sub($children, array $props = [])
 function sup($children, array $props = [])
 {
     return UI::createElement("sup", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -608,7 +684,8 @@ function sup($children, array $props = [])
 function figure(array $props = [], array $children = [])
 {
     return UI::createElement("figure", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -763,7 +840,8 @@ function option(string $value, string $text = "", array $props = [])
 {
     $props["value"] = $value;
     return UI::createElement("option", array_merge(
-        $props, ["children" => $text]
+        $props,
+        ["children" => $text]
     ));
 }
 
@@ -776,7 +854,8 @@ function option(string $value, string $text = "", array $props = [])
 function button($text, array $props = [])
 {
     return UI::createElement("button", array_merge(
-        $props, ["children" => $text]
+        $props,
+        ["children" => $text]
     ));
 }
 
@@ -796,7 +875,8 @@ function Uppercase($children, array $props = [])
 {
     $children = strtoupper($children);
     return UI::createElement("p", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -810,7 +890,8 @@ function Lowercase(string $children, array $props = [])
 {
     $children = strtolower($children);
     return UI::createElement("p", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -827,7 +908,8 @@ function Container($children, array $props = [])
     }
     $props["style"] = "padding: 12px 25px; " . $props["style"];
     return UI::createElement("div", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -844,7 +926,8 @@ function Row(array $children, array $props = [])
     }
     $props["style"] = "display: flex; " . $props["style"];
     return UI::createElement("div", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -861,7 +944,8 @@ function Column(array $children, array $props = [])
     }
     $props["style"] = "display: flex; flex-direction: column; " . $props["style"];
     return UI::createElement("div", array_merge(
-        $props, ["children" => $children]
+        $props,
+        ["children" => $children]
     ));
 }
 
@@ -921,7 +1005,8 @@ function Preloader($children, array $props = [])
             ]
         ]),
         UI::div(array_merge(
-            $props, ["children" => $children]
+            $props,
+            ["children" => $children]
         )),
         UI::_script(["
             window.addEventListener('load', function() {

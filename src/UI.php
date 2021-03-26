@@ -2,8 +2,6 @@
 
 namespace Leaf;
 
-require __DIR__ . "/UI/Elements.php";
-
 /**
  * Leaf UI
  * ---------------------
@@ -16,6 +14,11 @@ class UI
 {
     public const SINGLE_TAG = "single-tag";
     public const SELF_CLOSING = "self-closing";
+
+    public static function elements()
+    {
+        return require __DIR__ . "/UI/Elements.php";
+    }
 
     /**
      * Create an HTML element
@@ -115,11 +118,11 @@ class UI
             if (is_array($value)) {
                 if (strpos($key, "@") !== 0) {
                     $parsed_styles .= "$key { ";
-                        
+
                     foreach ($value as $selector => $styling) {
                         $parsed_styles .= "$selector: $styling; ";
                     }
-    
+
                     $parsed_styles .= "} ";
                 } else {
                     foreach ($value as $selector => $styling) {
@@ -231,39 +234,5 @@ class UI
     public static function Vendor($file = null)
     {
         return "vendor\\leafs\\ui\\src\\UI\\$file";
-    }
-
-    /**
-     * Import/Use a styleheet
-     * 
-     * @param string|array $src The styles/stylesheet to apply
-     * @param array $props The attributes for style/link tag
-     */
-    public static function Style($src, array $props = [])
-    {
-        if (!is_array($src)) {
-            return self::createElement("link", ["href" => $src, "rel" => "stylesheet"], [], self::SINGLE_TAG);
-        }
-
-        return self::createStyles($src, $props);
-    }
-
-    /**
-     * Import/Use a script
-     * 
-     * @param string|array $src The internal/external scripts to apply
-     * @param array $props The attributes for style/link tag
-     */
-    public static function Script($src, array $props = [])
-    {
-        if (is_string($src)) {
-            $props["src"] = $src;
-            return self::createElement("script", $props);
-        }
-
-        return self::createElement("script", array_merge(
-            $props,
-            ["children" => $src]
-        ));
     }
 }
