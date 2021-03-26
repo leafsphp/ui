@@ -409,7 +409,10 @@ function base(string $href, array $props = [])
  */
 function title(string $title, array $props = [])
 {
-    return UI::createElement("title", $props, [$title]);
+    return UI::createElement("title", array_merge(
+        $props,
+        ["children" => $title]
+    ));
 }
 
 /**
@@ -714,7 +717,10 @@ function textarea(string $name, array $props = [], string $children = "")
 
     $props["name"] = $name;
 
-    $output .= UI::createElement("textarea", $props, [$children]);
+    $output .= UI::createElement("textarea", array_merge(
+        $props,
+        ["children" => $children]
+    ));
     return $output;
 }
 
