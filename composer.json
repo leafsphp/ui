@@ -16,5 +16,9 @@
             "Leaf\\": "src"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "require": {
+        "ext-curl": "*",
+        "ext-json": "*"
+    }
 }
