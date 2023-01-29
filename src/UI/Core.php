@@ -9,9 +9,6 @@ namespace Leaf\UI;
  */
 class Core
 {
-    public const SINGLE_TAG = "single-tag";
-    public const SELF_CLOSING = "self-closing";
-
     /**
      * Create an HTML element
      * 
@@ -19,23 +16,20 @@ class Core
      * @param array $props The Element children and attributes eg: `style`
      * @param string|array|null $children The component children
      */
-    public static function createElement(string $element, $props = [], $children = null)
+    public static function createElement(string $element, $props = [], $children = [])
     {
-        $attributes = "";
         $subs = "";
+        $attributes = "";
         $id = self::randomId($element);
 
-        $data = [];
-
-        if (is_string($props)) {
-            $data["children"] = $props;
-        } else {
-            $data = $props;
+        if (!isset($props["id"])) {
+            $props["id"] = $id;
         }
 
-        $children = $data["children"];
-
-        unset($data["children"]);
+        if (isset($props["children"]) && (!$children || ($children && empty($children)))) {
+            $children = $props["children"];
+            unset($props["children"]);
+        }
 
         if (is_array($children)) {
             foreach ($children as $child) {
@@ -45,20 +39,32 @@ class Core
             $subs = $children;
         }
 
-        if (!empty($data)) {
-            foreach ($data as $key => $value) {
-                if ($key != "id") {
-                    $attributes .= "$key=\"" . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . "\" ";
-                } else {
-                    $id = $data["id"];
-                }
+        if (!empty($props)) {
+            foreach ($props as $key => $value) {
+                $attributes .= "$key=\"" . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . "\" ";
             }
         }
 
         if (!$children || $children && empty($children)) {
-            return self::selfClosing($element, $attributes, $id);
+            return "<$element $attributes />";
         }
 
-        return "<$element id=\"$id\" $attributes>$subs</$element>";
+        return "<$element $attributes>$subs</$element>";
+    }
+
+    /**
+     * Generate a random id
+     *
+     * @param string $element An html element name to append to id
+     * @return string The random id
+     */
+    public static function randomId($element = "")
+    {
+        $rand = '';
+        $seed = str_split('abcdefghijklmnopqrstuvwxyz' . 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' . '0123456789_-');
+        shuffle($seed);
+        foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
+
+        return "$rand-$element";
     }
 }
