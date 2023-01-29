@@ -20,5 +20,13 @@
     "require": {
         "ext-curl": "*",
         "ext-json": "*"
+    },
+    "require-dev": {
+        "leafs/alchemy": "^1.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }
