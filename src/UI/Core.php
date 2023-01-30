@@ -2,6 +2,8 @@
 
 namespace Leaf\UI;
 
+use MatthiasMullie\Minify\CSS;
+
 /**
  * Leaf UI Core
  * ---
@@ -16,19 +18,14 @@ class Core
      * @param array $props The Element children and attributes eg: `style`
      * @param string|array|null $children The component children
      */
-    public static function createElement(string $element, $props = [], $children = [])
+    public static function createElement(string $element, array $props = [], $children = [])
     {
-        $subs = "";
-        $attributes = "";
-        $id = self::randomId($element);
+        $subs = '';
+        $attributes = '';
 
-        if (!isset($props["id"])) {
-            $props["id"] = $id;
-        }
-
-        if (isset($props["children"]) && (!$children || ($children && empty($children)))) {
-            $children = $props["children"];
-            unset($props["children"]);
+        if (isset($props['children']) && (!$children || ($children && empty($children)))) {
+            $children = $props['children'];
+            unset($props['children']);
         }
 
         if (is_array($children)) {
@@ -45,11 +42,41 @@ class Core
             }
         }
 
-        if (!$children || $children && empty($children)) {
-            return "<$element $attributes />";
-        }
+        return (!$children || $children && empty($children))
+            ? "<$element $attributes />"
+            : "<$element $attributes>$subs</$element>";
+    }
 
-        return "<$element $attributes>$subs</$element>";
+    /**
+     * Map styles to style tag
+     * 
+     * @param array $styles The styles to apply
+     * @param array $props Style tag attributes
+     */
+    public static function createStyles(array $styles, array $props = [])
+    {
+        return self::createElement(
+            'style',
+            $props,
+            (new CSS())->add(self::parseStyles($styles))->minify()
+        );
+    }
+
+    /**
+     * Loop over an array of items
+     * 
+     * @param array $array The array to loop through
+     * @param callable $handler Call back function to run per iteration
+     */
+    public static function loop(array $array, callable $handler)
+    {
+        $element = "";
+        if (is_callable($handler)) {
+            foreach ($array as $key => $value) {
+                $element .= call_user_func($handler, $value, $key);
+            }
+        }
+        return $element;
     }
 
     /**
@@ -58,7 +85,7 @@ class Core
      * @param string $element An html element name to append to id
      * @return string The random id
      */
-    public static function randomId($element = "")
+    public static function randomId($element = '')
     {
         $rand = '';
         $seed = str_split('abcdefghijklmnopqrstuvwxyz' . 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' . '0123456789_-');
@@ -66,5 +93,42 @@ class Core
         foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
 
         return "$rand-$element";
+    }
+
+    protected static function parseStyles(array $styles): string
+    {
+        $parsed_styles = '';
+
+        foreach ($styles as $key => $value) {
+            if (is_numeric($key)) {
+                $parsed_styles .= $value;
+            } else if (is_string($value)) {
+                $parsed_styles .= "$key { $value }";
+            } else {
+                $parsed_styles .= "$key {";
+
+                foreach ($value as $selector => $styling) {
+                    if (is_array($styling)) {
+                        if (is_string($selector)) {
+                            $parsed_styles .= self::parseStyles([$selector => $styling]);
+                        } else {
+                            $parsed_styles .= self::parseStyles($styling);
+                        }
+                    } else {
+                        $styling = str_replace(';', "", $styling);
+
+                        if (is_numeric($selector)) {
+                            $parsed_styles .= self::parseStyles(["$styling;"]);
+                        } else {
+                            $parsed_styles .= "$selector { $styling; }";
+                        }
+                    }
+                }
+
+                $parsed_styles .= "}";
+            }
+        }
+
+        return $parsed_styles;
     }
 }
