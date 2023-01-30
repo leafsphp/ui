@@ -1,9 +1,11 @@
 <?php
 
+use \Leaf\UI\Core;
+
 it('returns an element', function () {
 	$doc = new DOMDocument();
 	$doc->loadHTML(
-		\Leaf\UI\Core::createElement('p', [], 'Hello World')
+		Core::createElement('p', [], 'Hello World')
 	);
 
 	expect(count($doc->getElementsByTagName('p')))->toBe(1);
@@ -12,7 +14,7 @@ it('returns an element', function () {
 it('allows attribute assignment', function () {
 	$doc = new DOMDocument();
 	$doc->loadHTML(
-		\Leaf\UI\Core::createElement('p', ['title' => 'Hello World'], 'Hello World')
+		Core::createElement('p', ['title' => 'Hello World'], 'Hello World')
 	);
 	$pTag = $doc->getElementsByTagName('p')->item(0);
 
@@ -22,7 +24,7 @@ it('allows attribute assignment', function () {
 it('allows multiple attribute assignment', function () {
 	$doc = new DOMDocument();
 	$doc->loadHTML(
-		\Leaf\UI\Core::createElement('p', ['title' => 'Hello World', 'class' => 'text-center'], 'Hello World')
+		Core::createElement('p', ['title' => 'Hello World', 'class' => 'text-center'], 'Hello World')
 	);
 	$pTag = $doc->getElementsByTagName('p')->item(0);
 
@@ -33,7 +35,7 @@ it('allows multiple attribute assignment', function () {
 it('allows children', function () {
 	$doc = new DOMDocument();
 	$doc->loadHTML(
-		\Leaf\UI\Core::createElement('p', [], 'Hello World')
+		Core::createElement('p', [], 'Hello World')
 	);
 	$pTag = $doc->getElementsByTagName('p')->item(0);
 
@@ -43,7 +45,7 @@ it('allows children', function () {
 it('allows multiple children', function () {
 	$doc = new DOMDocument();
 	$doc->loadHTML(
-		\Leaf\UI\Core::createElement('p', [], ['Hello', 'World'])
+		Core::createElement('p', [], ['Hello', 'World'])
 	);
 	$pTag = $doc->getElementsByTagName('p')->item(0);
 
@@ -53,7 +55,7 @@ it('allows multiple children', function () {
 it('allows children and attributes', function () {
 	$doc = new DOMDocument();
 	$doc->loadHTML(
-		\Leaf\UI\Core::createElement('p', ['title' => 'Hello World'], 'Hello World')
+		Core::createElement('p', ['title' => 'Hello World'], 'Hello World')
 	);
 	$pTag = $doc->getElementsByTagName('p')->item(0);
 
@@ -64,7 +66,7 @@ it('allows children and attributes', function () {
 it('allows children and multiple attributes', function () {
 	$doc = new DOMDocument();
 	$doc->loadHTML(
-		\Leaf\UI\Core::createElement('p', ['title' => 'Hello World', 'class' => 'text-center'], 'Hello World')
+		Core::createElement('p', ['title' => 'Hello World', 'class' => 'text-center'], 'Hello World')
 	);
 	$pTag = $doc->getElementsByTagName('p')->item(0);
 
@@ -76,7 +78,7 @@ it('allows children and multiple attributes', function () {
 it('allows children and multiple attributes with children as array', function () {
 	$doc = new DOMDocument();
 	$doc->loadHTML(
-		\Leaf\UI\Core::createElement('p', ['title' => 'Hello World', 'class' => 'text-center'], ['Hello', 'World'])
+		Core::createElement('p', ['title' => 'Hello World', 'class' => 'text-center'], ['Hello', 'World'])
 	);
 	$pTag = $doc->getElementsByTagName('p')->item(0);
 
@@ -88,7 +90,7 @@ it('allows children and multiple attributes with children as array', function ()
 it('allows children and multiple attributes with children as array and children as array', function () {
 	$doc = new DOMDocument();
 	$doc->loadHTML(
-		\Leaf\UI\Core::createElement('p', ['title' => 'Hello World', 'class' => 'text-center', 'children' => ['Hello', 'World']])
+		Core::createElement('p', ['title' => 'Hello World', 'class' => 'text-center', 'children' => ['Hello', 'World']])
 	);
 	$pTag = $doc->getElementsByTagName('p')->item(0);
 
