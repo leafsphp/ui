@@ -1,4 +1,10 @@
-import LeafUI from './lib/core';
+import { init } from './core';
 export * from './@types';
 
-export default LeafUI;
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+
+    document.querySelectorAll(`[ui-lazy]`).forEach(el => {
+        el.removeAttribute(`ui-lazy`);
+    });
+});
