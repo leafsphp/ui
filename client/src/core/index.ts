@@ -1,7 +1,7 @@
 import Component from "./component";
 
 /**
- * Initialize components defined in HTML with `l-state`
+ * Initialize Your Leaf UI root component
  * @param {HTMLElement|Document} element - Root element to find uninitialized components
  */
 export const init = (element: HTMLElement | Document = document): void => {
