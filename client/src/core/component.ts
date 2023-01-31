@@ -23,6 +23,8 @@ export default class Component {
         // compile and handle directives and stuff
         this.uiNodes = compile(rootEl, this.state);
 
+        console.log(this.uiNodes, 'uiNodes');
+
         // make state reactive
         // this.state = reactive(finalState, this.render.bind(this));
 

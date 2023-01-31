@@ -1,4 +1,5 @@
 import { DirectiveData, State, UINode, UINodeType } from './../@types/core';
+import { compute } from './compute';
 import { DIRECTIVE_SHORTHANDS, eventDirectivePrefixRE, expressionPropRE } from './data';
 
 export const flattenElementChildren = (
@@ -94,8 +95,7 @@ export const collectAndInitDirectives = (
         nodeDeps.push(...uniqueCompiledDeps);
 
         const directiveData = {
-            // compute: compute(value, el, returnable, refs),
-            compute: () => {},
+            compute: compute(value, el, returnable, refs),
             deps: uniqueCompiledDeps,
             value
         };
