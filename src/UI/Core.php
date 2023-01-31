@@ -12,6 +12,18 @@ use MatthiasMullie\Minify\CSS;
 class Core
 {
     /**
+     * Render a Leaf UI
+     * 
+     * @param Component|callable $component The Leaf UI component to render
+     */
+    public static function render($component) {
+        if (is_callable($component)) {
+            echo call_user_func($component);
+        } else if ($component instanceof Component) {
+            echo $component->render();
+        }
+    }
+    /**
      * Create an HTML element
      * 
      * @param string $element The HTML Element to create
