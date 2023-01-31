@@ -1,4 +1,5 @@
 import { State, UINode } from './../@types/core';
+import { compile } from './../utils/compile';
 import Connection from './connection';
 
 export default class Component {
@@ -19,10 +20,8 @@ export default class Component {
                 ? el
                 : document.querySelector<HTMLElement>(el) || document.body;
 
-        console.log(rootEl, 'rootEl');
-
         // compile and handle directives and stuff
-        // this.uiNodes = compile(rootEl, this.state);
+        this.uiNodes = compile(rootEl, this.state);
 
         // make state reactive
         // this.state = reactive(finalState, this.render.bind(this));
