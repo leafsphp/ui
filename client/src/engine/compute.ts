@@ -9,8 +9,8 @@ export const compute = (
     const formattedExpression = `${
         returnable ? `return ${expression}` : expression
     }`;
+
     const specialPropertiesNames = [
-        '$state',
         '$el',
         '$emit',
         '$event',
@@ -20,9 +20,7 @@ export const compute = (
     // This "revives" a function from a string, only using the new Function syntax once during compilation.
     // This is because raw function is ~50,000x faster than new Function
     const computeFunction = new Function(
-        `return (${specialPropertiesNames.join(
-            ','
-        )})=>{with($state){${formattedExpression}}}`
+        `return (${specialPropertiesNames.join(',')})=>{${formattedExpression}()}`
     )();
 
     const emit = (
