@@ -1,3 +1,5 @@
+import Component from "core/component";
+
 export const eventDirectivePrefixRE = (): RegExp => /on|@/gim;
 export const rawDirectiveSplitRE = (): RegExp => /:|\./gim;
 
@@ -18,3 +20,9 @@ export enum DIRECTIVE_SHORTHANDS {
     '@' = 'on',
     ':' = 'bind'
 }
+
+declare global {
+    interface Window { leafUI: Component; }
+}
+
+window.leafUI = window.leafUI || {};
