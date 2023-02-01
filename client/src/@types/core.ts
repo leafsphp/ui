@@ -7,6 +7,8 @@ export interface DirectiveProps {
     node?: UINode;
 }
 
+export type KeyedEvent = KeyboardEvent | MouseEvent | TouchEvent;
+
 export interface DirectiveData {
     compute: (event?: Event) => any;
     value: string;
