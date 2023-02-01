@@ -5,7 +5,7 @@ export const compute = (
     el?: HTMLElement,
     returnable = true,
     refs: Record<string, HTMLElement> = {}
-): ((state: Record<string, unknown>, event?: Event) => any) => {
+): ((event?: Event) => any) => {
     const formattedExpression = `${
         returnable ? `return ${expression}` : expression
     }`;
@@ -36,16 +36,9 @@ export const compute = (
         target.dispatchEvent(event);
     };
 
-    return (state: Record<string, unknown>, event?: Event) => {
+    return (event?: Event) => {
         try {
-            const value = state[expression];
-            if (value) {
-                return typeof value === 'function'
-                    ? value.bind(state)()
-                    : value;
-            } else {
-                return computeFunction(state, el, emit, event, refs);
-            }
+            return computeFunction(el, emit, event, refs);
         } catch (err) {
             error(err as string, expression, el);
         }

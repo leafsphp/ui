@@ -1,14 +1,12 @@
-import Component from "./component";
+import Component from './component';
 
 /**
  * Initialize Your Leaf UI root component
  * @param {HTMLElement|Document} element - Root element to find uninitialized components
  */
 export const init = (element: HTMLElement | Document = document): void => {
-    const documentBody = element instanceof Document ? element.body : element;
-    const stateExpression = documentBody.getAttribute('ui-state');
-    const state = new Function(`return ${stateExpression}`)() || {};
-    const currentComponent = new Component(state);
+    const leafUI = new Component();
+    const rootElement = element instanceof Document ? element.body : element;
 
-    currentComponent.mount(documentBody);
+    leafUI.mount(rootElement);
 };

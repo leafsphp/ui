@@ -1,14 +1,10 @@
-export type State = Record<string, unknown>;
-
 export interface DirectiveData {
-    compute: (state: Record<string, unknown>, event?: Event) => any;
+    compute: (event?: Event) => any;
     value: string;
-    deps: string[];
 }
 
 export interface UINode {
     directives: Record<string, DirectiveData>;
-    deps: string[];
     el: HTMLElement;
     type: UINodeType;
 }
