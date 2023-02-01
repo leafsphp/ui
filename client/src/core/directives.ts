@@ -1,11 +1,11 @@
 import { DirectiveProps, Directives } from './../@types/core';
-import { bindDirective } from './directives/bind';
-import { modelDirective } from './directives/model';
+// import { bindDirective } from './directives/bind';
+// import { modelDirective } from './directives/model';
 import { onDirective } from './directives/on';
 
 export const directives: Directives = {
-    BIND: bindDirective,
-    MODEL: modelDirective,
+    // BIND: bindDirective,
+    // MODEL: modelDirective,
     ON: onDirective,
 };
 
