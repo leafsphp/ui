@@ -1,6 +1,8 @@
 import { UINode } from './../@types/core';
-import { compile } from './../utils/compile';
-import Connection from './connection';
+import { compile } from '../engine/compile';
+import Connection from '../server/connection';
+import render from '../engine/render';
+import { directives } from './directives';
 
 export default class Component {
     public uiNodes: UINode[] = [];
@@ -19,25 +21,20 @@ export default class Component {
 
         this.uiNodes = compile(rootEl);
 
-        console.log(this.uiNodes, 'uiNodes');
+        this.render();
 
-        // this.render();
-
-        // this.connection.connect();
-
-        // rootEl['component'] = this;
+        // @ts-expect-error
+        rootEl['component'] = this;
 
         return this;
     }
 
+    /**
+     * Force renders the DOM based on props
+     * @param {string[]=} props - Array of root level properties in state
+     * @returns {undefined}
+     */
     public render() {
-        this.uiNodes.forEach(node => {
-            const { el, directives } = node;
-            Object.keys(directives).forEach(directive => {
-                const { compute } = directives[directive];
-                const value = compute();
-                el.setAttribute(directive, value);
-            });
-        });
+        render(this.uiNodes, directives);
     }
 }

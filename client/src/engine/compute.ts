@@ -1,4 +1,4 @@
-import { error } from "./error";
+import { error } from '../utils/error';
 
 export const compute = (
     expression: string,
@@ -31,8 +31,8 @@ export const compute = (
         dispatchGlobal = true
     ) => {
         const event = new CustomEvent(name, options);
-        /* istanbul ignore next */
         const target = dispatchGlobal ? window : el || window;
+
         target.dispatchEvent(event);
     };
 

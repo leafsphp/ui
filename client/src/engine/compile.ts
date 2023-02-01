@@ -1,9 +1,9 @@
-import { DirectiveData, UINode, UINodeType } from './../@types/core';
+import { DirectiveData, UINode, UINodeType } from '../@types/core';
 import { compute } from './compute';
 import {
     DIRECTIVE_SHORTHANDS,
     eventDirectivePrefixRE,
-} from './data';
+} from '../utils/data';
 
 export const flattenElementChildren = (
     rootElement: HTMLElement,
