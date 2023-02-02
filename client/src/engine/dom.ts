@@ -1,4 +1,4 @@
-import { DIRECTIVE_SHORTHANDS } from './../utils/data';
+import { DIRECTIVE_SHORTHANDS, arraysMatch } from './../utils/data';
 
 export default class Dom {
     static diff(newNode: string, oldNode: HTMLElement): void {
@@ -44,6 +44,16 @@ export default class Dom {
                     diff[i].oldNode.setAttribute(attr.name, attr.value);
                 }
 
+                continue;
+            }
+
+            if (
+                arraysMatch(
+                    Object.keys(diff[i].oldNode.attributes),
+                    Object.keys(diff[i].newNode.attributes)
+                ) &&
+                diff[i].oldNode.innerHTML === diff[i].newNode.innerHTML
+            ) {
                 continue;
             }
 
