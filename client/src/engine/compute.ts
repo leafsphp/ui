@@ -18,7 +18,7 @@ export const compute = (
                 error(new ReferenceError(method + ' is not defined'), method, $el);
             }
 
-            (${Connection.callMethod})();
+            (${Connection.callMethod})(method, window._leafUIConfig);
         }`
     )();
 
