@@ -73,8 +73,6 @@ export const onDirective = ({ el, parts, data }: DirectiveProps): void => {
         }
     };
 
-    console.log('onDirective', el, data);
-
     options.once = eventProps.includes('once');
     options.passive = eventProps.includes('passive');
 
