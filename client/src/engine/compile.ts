@@ -2,7 +2,6 @@ import { DirectiveData, UINode, UINodeType } from '../@types/core';
 import { compute } from './compute';
 import {
     DIRECTIVE_SHORTHANDS,
-    eventDirectivePrefixRE,
 } from '../utils/data';
 
 export const flattenElementChildren = (
@@ -66,12 +65,8 @@ export const initDirectives = (
             continue;
         }
 
-        let returnable = true;
-
-        if (eventDirectivePrefixRE().test(name)) returnable = false;
-
         const directiveData = {
-            compute: compute(value, el, returnable, refs),
+            compute: compute(value, el, refs),
             value
         };
 
