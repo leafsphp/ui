@@ -13,6 +13,16 @@ export default class Dom {
                 continue;
             }
 
+            if (
+                arraysMatch(
+                    Object.keys(diff[i].oldNode.attributes),
+                    Object.keys(diff[i].newNode.attributes)
+                ) &&
+                diff[i].oldNode.innerHTML === diff[i].newNode.innerHTML
+            ) {
+                continue;
+            }
+
             const hasDirectivePrefix = Object.values(diff[i].oldNode.attributes)
                 .map(attr => attr.name.startsWith('ui-'))
                 .includes(true);
@@ -44,16 +54,6 @@ export default class Dom {
                     diff[i].oldNode.setAttribute(attr.name, attr.value);
                 }
 
-                continue;
-            }
-
-            if (
-                arraysMatch(
-                    Object.keys(diff[i].oldNode.attributes),
-                    Object.keys(diff[i].newNode.attributes)
-                ) &&
-                diff[i].oldNode.innerHTML === diff[i].newNode.innerHTML
-            ) {
                 continue;
             }
 
