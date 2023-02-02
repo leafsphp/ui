@@ -25,3 +25,13 @@ export enum UINodeType {
     STATIC = 0,
     DYNAMIC = 1
 }
+
+export interface LeafUIConfig {
+    el: HTMLElement;
+    data: Record<string, any>;
+    methods: string[];
+    id: string;
+    path: string;
+    requestMethod: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD';
+    component: string;
+}
