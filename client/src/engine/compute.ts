@@ -16,7 +16,7 @@ export const compute = (
             const method = ${JSON.stringify(expression)};
 
             if (!window._leafUIConfig.methods.includes(method)) {
-                error(new ReferenceError(method + ' is not defined'), method, $el);
+                return error(new ReferenceError(method + ' is not defined'), method, $el);
             }
 
             (${Connection.callMethod})(method, window._leafUIConfig, $dom);
