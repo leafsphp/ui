@@ -5,8 +5,6 @@ export default class Dom {
         const newDomBody = Dom.getBodyWithoutScripts(newNode);
         const diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
 
-        console.log(oldNode, newDomBody, 'doms');
-
         for (let i = 0; i < diff.length; i++) {
             if (
                 diff[i] instanceof HTMLScriptElement ||
