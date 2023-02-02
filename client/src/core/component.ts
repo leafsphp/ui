@@ -1,16 +1,13 @@
 import { UINode } from './../@types/core';
 import { compile } from '../engine/compile';
-import Connection from '../server/connection';
 import render from '../engine/render';
 import { directives } from './directives';
 
 export default class Component {
     public uiNodes: UINode[] = [];
-    public connection: Connection;
 
     constructor() {
         this.uiNodes = [];
-        this.connection = new Connection();
     }
 
     public mount(el: HTMLElement | string) {
