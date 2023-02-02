@@ -1,12 +1,13 @@
 import { error } from '../utils/error';
 import Connection from './../server/connection';
+import Dom from './dom';
 
 export const compute = (
     expression: string,
     el?: HTMLElement,
     refs: Record<string, HTMLElement> = {}
 ): ((event?: Event) => any) => {
-    const specialPropertiesNames = ['$el', '$emit', '$event', '$refs'];
+    const specialPropertiesNames = ['$el', '$emit', '$event', '$refs', '$dom'];
 
     // This "revives" a function from a string, only using the new Function syntax once during compilation.
     // This is because raw function is ~50,000x faster than new Function
@@ -18,7 +19,7 @@ export const compute = (
                 error(new ReferenceError(method + ' is not defined'), method, $el);
             }
 
-            (${Connection.callMethod})(method, window._leafUIConfig);
+            (${Connection.callMethod})(method, window._leafUIConfig, $dom);
         }`
     )();
 
@@ -35,7 +36,7 @@ export const compute = (
 
     return (event?: Event) => {
         try {
-            return computeFunction(el, emit, event, refs);
+            return computeFunction(el, emit, event, refs, Dom);
         } catch (err) {
             error(err as string, expression, el);
         }
