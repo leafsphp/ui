@@ -1,26 +1,25 @@
 import { error } from '../utils/error';
+import Connection from './../server/connection';
 
 export const compute = (
     expression: string,
     el?: HTMLElement,
-    returnable = true,
     refs: Record<string, HTMLElement> = {}
 ): ((event?: Event) => any) => {
-    const formattedExpression = `${
-        returnable ? `return ${expression}` : expression
-    }`;
-
-    const specialPropertiesNames = [
-        '$el',
-        '$emit',
-        '$event',
-        '$refs'
-    ];
+    const specialPropertiesNames = ['$el', '$emit', '$event', '$refs'];
 
     // This "revives" a function from a string, only using the new Function syntax once during compilation.
     // This is because raw function is ~50,000x faster than new Function
     const computeFunction = new Function(
-        `return (${specialPropertiesNames.join(',')})=>{${formattedExpression}()}`
+        `return (${specialPropertiesNames.join(',')}) => {
+            const method = ${JSON.stringify(expression)};
+
+            if (!window._leafUIConfig.methods.includes(method)) {
+                error(new ReferenceError(method + ' is not defined'), method, $el);
+            }
+
+            (${Connection.callMethod})();
+        }`
     )();
 
     const emit = (
