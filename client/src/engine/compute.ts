@@ -19,7 +19,7 @@ export const compute = (
                 return error(new ReferenceError(method + ' is not defined'), method, $el);
             }
 
-            (${Connection.callMethod})(method, window._leafUIConfig, $dom);
+            (${Connection.connect})(method, window._leafUIConfig, $dom);
         }`
     )();
 

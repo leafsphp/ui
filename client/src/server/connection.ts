@@ -5,7 +5,7 @@ import { error } from './../utils/error';
 export default class Connection {
     protected static headers: Record<string, string>;
 
-    public static callMethod(methodName: string, leafUIConfig: LeafUIConfig, dom: typeof Dom) {
+    public static connect(methodName: string, leafUIConfig: LeafUIConfig, dom: typeof Dom) {
         const payload = {
             updates: {
                 type: 'callMethod',
