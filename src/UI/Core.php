@@ -16,11 +16,23 @@ class Core
      * 
      * @param Component|callable $component The Leaf UI component to render
      */
-    public static function render($component) {
+    public static function render($component)
+    {
         if (is_callable($component)) {
             echo call_user_func($component);
         } else if ($component instanceof Component) {
-            echo $component->render();
+            echo $component->render() . Core::createElement('script', [], ['
+                    window.onload = function() {
+                        window._leafUIConfig = {
+                            el: document.querySelector("body"),
+                            data: ' . json_encode(get_class_vars($component::class)) . ',
+                            methods: ' . json_encode(get_class_methods($component::class)) . ',
+                            id: "' . self::randomId($component::class) . '",
+                            path: "' . $_SERVER['REQUEST_URI'] . '",
+                            requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
+                        };
+                    }
+                ']);
         }
     }
     /**
