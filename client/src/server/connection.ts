@@ -1,40 +1,45 @@
 import Dom from './../engine/dom';
-import { LeafUIConfig } from './../@types/core';
 import { error } from './../utils/error';
 
 export default class Connection {
     protected static headers: Record<string, string>;
 
-    public static connect(methodName: string, leafUIConfig: LeafUIConfig, dom: typeof Dom) {
+    public static connect(
+        type: string,
+        uiData: Record<string, any>,
+        dom: typeof Dom
+    ) {
         const payload = {
-            updates: {
-                type: 'callMethod',
-                payload: {
-                    method: methodName,
-                    component: leafUIConfig.component,
-                    data: leafUIConfig.data,
-                    params: []
-                }
+            type,
+            payload: {
+                params: [],
+                method: uiData.method,
+                component: uiData.config.component,
+                data: uiData.config.data,
             }
         };
 
-        return fetch(`${window.location.href}${leafUIConfig.path}`, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            // This enables "cookies".
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'text/html, application/xhtml+xml',
-                'X-Leaf-UI': 'true',
+        return fetch(
+            `${window.location.href}${
+                uiData.config.path
+            }?_leaf_ui_config=${JSON.stringify(payload)}`,
+            {
+                method: uiData.config.method,
+                // This enables "cookies".
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'text/html, application/xhtml+xml',
+                    'X-Leaf-UI': 'true',
 
-                // set Custom Headers
-                ...this.headers,
+                    // set Custom Headers
+                    ...this.headers,
 
-                // We'll set this explicitly to mitigate potential interference from ad-blockers/etc.
-                Referer: window.location.href
+                    // We'll set this explicitly to mitigate potential interference from ad-blockers/etc.
+                    Referer: window.location.href
+                }
             }
-        }).then(async response => {
+        ).then(async response => {
             if (response.ok) {
                 response.text().then(response => {
                     const data = JSON.parse(response);
