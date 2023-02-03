@@ -15,14 +15,14 @@ export default class Connection {
                 params: [],
                 method: uiData.method,
                 component: uiData.config.component,
-                data: uiData.config.data,
+                data: uiData.config.data
             }
         };
 
         return fetch(
-            `${window.location.href}${
-                uiData.config.path
-            }?_leaf_ui_config=${JSON.stringify(payload)}`,
+            `${window.location.href}?_leaf_ui_config=${JSON.stringify(
+                payload
+            )}`,
             {
                 method: uiData.config.method,
                 // This enables "cookies".
