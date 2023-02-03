@@ -18,21 +18,42 @@ class Core
      */
     public static function render($component)
     {
+        $data = json_decode(request()->get('_leaf_ui_config', false) ?? '', true);
+
+        if (is_string($data['type'] ?? null === 'callMethod')) {
+            foreach ($data['payload']['data'] as $key => $value) {
+                $component->{$key} = $value;
+            }
+
+            $component->{$data['payload']['method']}();
+
+            $state = [];
+
+            foreach ($data['payload']['data'] as $key => $value) {
+                $state[$key] = $component->{$key};
+            }
+
+            return response()->json([
+                'html' => $component->render(),
+                'state' => $state,
+            ]);
+        }
+
         if (is_callable($component)) {
             echo call_user_func($component);
         } else if ($component instanceof Component) {
-            echo $component->render() . Core::createElement('script', [], ['
+            echo str_replace('</body>', Core::createElement('script', [], ['
                     window.onload = function() {
                         window._leafUIConfig = {
                             el: document.querySelector("body"),
+                            component: "' . $component::class . '",
                             data: ' . json_encode(get_class_vars($component::class)) . ',
                             methods: ' . json_encode(get_class_methods($component::class)) . ',
-                            id: "' . self::randomId($component::class) . '",
                             path: "' . $_SERVER['REQUEST_URI'] . '",
                             requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
                         };
                     }
-                ']);
+                ']) . '</body>', $component->render());
         }
     }
     /**
