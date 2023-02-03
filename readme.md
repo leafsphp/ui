@@ -1,8 +1,17 @@
-# Leaf UI
+<!-- markdownlint-disable no-inline-html -->
+<p align="center">
+  <br><br>
+  <img src="https://leafphp.dev/logo-circle.png" height="100"/>
+  <br>
+</p>
+
+<h1 align="center">Leaf UI [WIP v0.2.0]</h1>
 
 Leaf UI is a PHP library for building user interfaces.
 
-Leaf UI simply takes away the 100s of lines of crazy HTML you'd need to write, so you can focus on only PHP. Leaf UI doesn't need a new compiler or any extensive compiling, it's just the same old PHP you write everyday; as such, you can build full scaleable Leaf UI powered apps or just sprinkle Leaf UI into your existing HTML/PHP code.
+Leaf UI doesn't need a new compiler or any extensive compiling, it's just the same old PHP you write everyday; as such, you can build full scaleable Leaf UI powered apps or just sprinkle Leaf UI into your existing HTML/PHP code.
+
+v0.2.0 of Leaf UI is currently in development. It's a complete rewrite of the library and will be released soon. It comes with a lot of new features and a new API. Leaf UI v0.2.0 will allow you to build full scaleable Leaf UI powered apps, write reactive UIs all in PHP. You can think of it as a PHP version of React.
 
 ## Installing Leaf UI
 
@@ -18,54 +27,74 @@ After this, you can use all of Leaf UI's methods and components.
 
 View the [mini documentation here](//leafphp.netlify.app/#//ui/)
 
-## Working with Leaf UI
+## Building your first Leaf UI
 
-What does leaf UI offer you?
-
-Instead of this:
+Since Leaf UI is modelled after React, everything is a component. You can create your own components and handle your application state in them.
 
 ```php
 <?php
-// all your logic
 
-echo "<section class=\"box\">
-  <h2 class=\"box-title\">Item name</h2>
-  <p class=\"box-body\">
-    Your body here
-  </p>
-</section>";
-?>
+use Leaf\UI\Core;
+use Leaf\UI\Component;
+
+class Test2 extends Component
+{
+    public $count = 1;
+
+    public function increment()
+    {
+        $this->count = $this->count + 1;
+    }
+
+    public function decrement()
+    {
+        $this->count = $this->count - 1;
+    }
+
+    public function render()
+    {
+        return Core::createElement('body', [], [
+            Core::createElement('div', [], [
+                Core::createElement('div', [], 'Static text'),
+                Core::createElement('button', ['@click' => 'decrement'], '-'),
+                Core::createElement('h1', [], $this->count),
+                Core::createElement('button', ['@click' => 'increment'], '+'),
+            ]),
+            Core::createElement('script', ['src' => 'PATH/TO/LeafUI_.js'], ['']),
+        ]);
+    }
+}
 ```
 
-You get to write this:
+This component renders some static text, a button to decrement a counter, a counter and a button to increment the counter. The counter is stored in the component's state and is updated when the buttons are clicked.
+
+To actually make this work, you simply need to render this component wherever you want it to appear.
 
 ```php
 <?php
-// all your logic
 
-echo section(["class" => "box"], [
-  h2("Item name"),
-  p("Your body here")
-]);
-?>
+use Leaf\UI\Core;
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+echo Core::render(new Test2());
 ```
 
-In the end, leaf ui allows you to write your whole app peacefully without having to deal with weird strings, interpollation and all that. Just write PHP!
+The most beautiful part about all this is that it can run outside Leaf. It is completely independent of Leaf and can be used in any PHP application.
 
-*This file is still being updated!*
-
+_This file is still being updated!_
 
 ## 💬 Stay In Touch
 
-- [Twitter](https://twitter.com/leafphp)
-- [Join the forum](https://github.com/leafsphp/leaf/discussions/37)
-- [Chat on discord](https://discord.com/invite/Pkrm9NJPE3)
+-   [Twitter](https://twitter.com/leafphp)
+-   [Join the forum](https://github.com/leafsphp/leaf/discussions/37)
+-   [Chat on discord](https://discord.com/invite/Pkrm9NJPE3)
 
 ## 📓 Learning Leaf 3
 
-- Leaf has a very easy to understand [documentation](https://leafphp.dev) which contains information on all operations in Leaf.
-- You can also check out our [youtube channel](https://www.youtube.com/channel/UCllE-GsYy10RkxBUK0HIffw) which has video tutorials on different topics
-- We are also working on codelabs which will bring hands-on tutorials you can follow and contribute to.
+-   Leaf has a very easy to understand [documentation](https://leafphp.dev) which contains information on all operations in Leaf.
+-   You can also check out our [youtube channel](https://www.youtube.com/channel/UCllE-GsYy10RkxBUK0HIffw) which has video tutorials on different topics
+-   We are also working on codelabs which will bring hands-on tutorials you can follow and contribute to.
 
 ## 😇 Contributing
 
@@ -125,7 +154,7 @@ And to all our existing cash/code contributors, we love you all ❤️
 
 ## 🤯 Links/Projects
 
-- [Leaf Docs](https://leafphp.dev)
-- [Skeleton Docs](https://skeleton.leafphp.dev)
-- [Leaf CLI Docs](https://cli.leafphp.dev)
-- [Aloe CLI Docs](https://leafphp.dev/aloe-cli/)
+-   [Leaf Docs](https://leafphp.dev)
+-   [Skeleton Docs](https://skeleton.leafphp.dev)
+-   [Leaf CLI Docs](https://cli.leafphp.dev)
+-   [Aloe CLI Docs](https://leafphp.dev/aloe-cli/)
