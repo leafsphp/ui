@@ -61,6 +61,16 @@ it('should compile to css with multiple styles as an array without colons', func
     expect($styleTag->nodeValue)->toBe('body{background:red;color:blue}');
 });
 
+it('should compile to css with multiple styles as an associative array without colons', function () {
+    $doc = new DOMDocument();
+    $doc->loadHTML(
+        Core::createStyles(['body' => ['background' => 'red', 'color' => 'blue']])
+    );
+    $styleTag = $doc->getElementsByTagName('style')->item(0);
+
+    expect($styleTag->nodeValue)->toBe('body{background:red;color:blue}');
+});
+
 it('should compile to css with multiple styles and selectors as an array', function () {
     $doc = new DOMDocument();
     $doc->loadHTML(
