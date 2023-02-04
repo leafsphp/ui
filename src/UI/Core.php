@@ -147,38 +147,49 @@ class Core
 
     protected static function parseStyles(array $styles): string
     {
-        $parsed_styles = '';
+        $parsedStyles = '';
 
         foreach ($styles as $key => $value) {
             if (is_numeric($key)) {
-                $parsed_styles .= $value;
+                $value = rtrim($value, ';');
+                $parsedStyles .= "$value;";
             } else if (is_string($value)) {
-                $parsed_styles .= "$key { $value }";
+                $value = rtrim($value, ';');
+
+                if (strpos($value, ':') !== false) {
+                    $parsedStyles .= "$key { $value; }";
+                } else {
+                    $parsedStyles .= "$key: $value;";
+                }
             } else {
-                $parsed_styles .= "$key {";
+                $parsedStyles .= "$key {";
 
                 foreach ($value as $selector => $styling) {
                     if (is_array($styling)) {
                         if (is_string($selector)) {
-                            $parsed_styles .= self::parseStyles([$selector => $styling]);
+                            $parsedStyles .= self::parseStyles([$selector => $styling]);
                         } else {
-                            $parsed_styles .= self::parseStyles($styling);
+                            $parsedStyles .= self::parseStyles($styling);
                         }
                     } else {
-                        $styling = str_replace(';', "", $styling);
+                        $styling = rtrim($styling, ';');
 
                         if (is_numeric($selector)) {
-                            $parsed_styles .= self::parseStyles(["$styling;"]);
+                            $parsedStyles .= self::parseStyles(["$styling;"]);
                         } else {
-                            $parsed_styles .= "$selector { $styling; }";
+                            if (strpos($styling, ':') !== false) {
+                                $parsedStyles .= "$selector { $styling; }";
+                            } else {
+                                $parsedStyles .= "$selector: $styling;";
+                            }
                         }
                     }
                 }
 
-                $parsed_styles .= "}";
+                $parsedStyles .= '}';
             }
         }
 
-        return $parsed_styles;
+        return $parsedStyles;
     }
 }
