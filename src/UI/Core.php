@@ -18,9 +18,9 @@ class Core
      */
     public static function render($component)
     {
-        $data = json_decode(request()->get('_leaf_ui_config', false) ?? '', true);
+        $data = json_decode(\Leaf\Http\Request::get('_leaf_ui_config', false) ?? '', true);
 
-        if (is_string($data['type'] ?? null === 'callMethod')) {
+        if (is_string($data['type'] ?? null)) {
             foreach ($data['payload']['data'] as $key => $value) {
                 $component->{$key} = $value;
             }
@@ -35,7 +35,7 @@ class Core
                 $state[$key] = $component->{$key};
             }
 
-            return response()->json([
+            return \Leaf\Http\Response::json([
                 'html' => $component->render(),
                 'state' => $state,
             ]);
@@ -58,6 +58,7 @@ class Core
                 ']) . '</body>', $component->render());
         }
     }
+
     /**
      * Create an HTML element
      * 
@@ -118,11 +119,13 @@ class Core
     public static function loop(array $array, callable $handler)
     {
         $element = "";
+
         if (is_callable($handler)) {
             foreach ($array as $key => $value) {
                 $element .= call_user_func($handler, $value, $key);
             }
         }
+
         return $element;
     }
 
