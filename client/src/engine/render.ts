@@ -1,7 +1,7 @@
 import lazy from './../utils/lazy';
+import { renderDirective } from './../core/directives';
 import { rawDirectiveSplitRE } from './../utils/data';
 import { Directives, UINode, UINodeType } from './../@types/core';
-import { renderDirective } from './../core/directives';
 
 const render = (
     uiNodes: UINode[],
