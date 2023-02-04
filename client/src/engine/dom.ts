@@ -18,6 +18,10 @@ export default class Dom {
                     Object.keys(diff[i].oldNode.attributes),
                     Object.keys(diff[i].newNode.attributes)
                 ) &&
+                arraysMatch(
+                    Object.values(diff[i].oldNode.attributes),
+                    Object.values(diff[i].newNode.attributes)
+                ) &&
                 diff[i].oldNode.innerHTML === diff[i].newNode.innerHTML
             ) {
                 continue;
@@ -35,6 +39,7 @@ export default class Dom {
             );
 
             if (hasDirectivePrefix || hasDirectiveShorthandPrefix) {
+                console.log('diffing reaches here...', diff[i]);
                 diff[i].oldNode.innerHTML = diff[i].newNode.innerHTML;
 
                 for (let j = 0; j < diff[i].newNode.attributes.length; j++) {
@@ -48,6 +53,13 @@ export default class Dom {
                                 .includes(true)
                         )
                     ) {
+                        if (
+                            diff[i].oldNode.getAttribute(attr.name) ===
+                            attr.value
+                        ) {
+                            diff[i].oldNode.setAttribute(attr.name, attr.value);
+                        }
+
                         continue;
                     }
 
