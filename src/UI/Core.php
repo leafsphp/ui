@@ -19,7 +19,7 @@ class Core
     public static function render($component)
     {
         $data = json_decode((new \Leaf\Http\Request())->get('_leaf_ui_config', false) ?? '', true);
- 
+
         if (is_string($data['type'] ?? null)) {
             foreach ($data['payload']['data'] as $key => $value) {
                 $component->{$key} = $value;
@@ -27,7 +27,10 @@ class Core
 
             $data['payload']['methodArgs'] = explode(',', $data['payload']['methodArgs']);
 
-            call_user_func([$component, $data['payload']['method']], ...$data['payload']['methodArgs']);
+            call_user_func(
+                [$component, $data['payload']['method']],
+                ...$data['payload']['methodArgs']
+            );
 
             $state = [];
 
@@ -41,22 +44,19 @@ class Core
             ]);
         }
 
-        if (is_callable($component)) {
-            echo call_user_func($component);
-        } else if ($component instanceof Component) {
-            echo str_replace('</body>', Core::createElement('script', [], ['
-                    window.onload = function() {
-                        window._leafUIConfig = {
-                            el: document.querySelector("body"),
-                            component: "' . $component::class . '",
-                            data: ' . json_encode(get_class_vars($component::class)) . ',
-                            methods: ' . json_encode(get_class_methods($component::class)) . ',
-                            path: "' . $_SERVER['REQUEST_URI'] . '",
-                            requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
-                        };
-                    }
-                ']) . '</body>', $component->render());
-        }
+        (new \Leaf\Http\Response)
+            ->markup(str_replace('</body>', Core::createElement('script', [], ['
+                window.onload = function() {
+                    window._leafUIConfig = {
+                        el: document.querySelector("body"),
+                        component: "' . $component::class . '",
+                        data: ' . json_encode(get_class_vars($component::class)) . ',
+                        methods: ' . json_encode(get_class_methods($component::class)) . ',
+                        path: "' . $_SERVER['REQUEST_URI'] . '",
+                        requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
+                    };
+                }
+            ']) . '</body>', $component->render()));
     }
 
     /**
