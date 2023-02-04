@@ -18,8 +18,8 @@ class Core
      */
     public static function render($component)
     {
-        $data = json_decode(\Leaf\Http\Request::get('_leaf_ui_config', false) ?? '', true);
-
+        $data = json_decode((new \Leaf\Http\Request())->get('_leaf_ui_config', false) ?? '', true);
+ 
         if (is_string($data['type'] ?? null)) {
             foreach ($data['payload']['data'] as $key => $value) {
                 $component->{$key} = $value;
@@ -35,7 +35,7 @@ class Core
                 $state[$key] = $component->{$key};
             }
 
-            return \Leaf\Http\Response::json([
+            return (new \Leaf\Http\Response)->json([
                 'html' => $component->render(),
                 'state' => $state,
             ]);
