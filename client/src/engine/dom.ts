@@ -1,3 +1,4 @@
+import { initComponent } from './../core/component';
 import { DIRECTIVE_SHORTHANDS, arraysMatch } from './../utils/data';
 
 export default class Dom {
@@ -39,7 +40,6 @@ export default class Dom {
             );
 
             if (hasDirectivePrefix || hasDirectiveShorthandPrefix) {
-                console.log('diffing reaches here...', diff[i]);
                 diff[i].oldNode.innerHTML = diff[i].newNode.innerHTML;
 
                 for (let j = 0; j < diff[i].newNode.attributes.length; j++) {
@@ -54,10 +54,11 @@ export default class Dom {
                         )
                     ) {
                         if (
-                            diff[i].oldNode.getAttribute(attr.name) ===
+                            diff[i].oldNode.getAttribute(attr.name) !==
                             attr.value
                         ) {
-                            diff[i].oldNode.setAttribute(attr.name, attr.value);
+                            diff[i].oldNode.replaceWith(diff[i].newNode);
+                            initComponent(diff[i].newNode);
                         }
 
                         continue;
