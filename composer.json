@@ -20,7 +20,8 @@
     "require": {
         "ext-curl": "*",
         "ext-json": "*",
-        "matthiasmullie/minify": "^1.3"
+        "matthiasmullie/minify": "^1.3",
+        "leafs/http": "dev-main"
     },
     "require-dev": {
         "leafs/alchemy": "^1.0"
