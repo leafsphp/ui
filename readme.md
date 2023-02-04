@@ -21,6 +21,12 @@ Like most PHP libraries, we recommend installing Leaf UI with [composer](//getco
 composer require leafs/ui
 ```
 
+Or install the next version of Leaf UI:
+
+```bash
+composer require leafs/ui@dev-next
+```
+
 This will install Leaf UI into your application. You don't have to worry about bloating your application: Leaf UI has no external dependencies.
 
 After this, you can use all of Leaf UI's methods and components.
