@@ -9,9 +9,9 @@
 
 Leaf UI is a PHP library for building user interfaces.
 
-Leaf UI doesn't need a new compiler or any extensive compiling, it's just the same old PHP you write everyday; as such, you can build full scaleable Leaf UI powered apps or just sprinkle Leaf UI into your existing HTML/PHP code.
+Leaf UI doesn't need a new compiler or any extensive compiling, it's just the same old PHP you write everyday; as such, you can build full scalable Leaf UI powered apps or just sprinkle Leaf UI into your existing HTML/PHP code.
 
-v0.2.0 of Leaf UI is currently in development. It's a complete rewrite of the library and will be released soon. It comes with a lot of new features and a new API. Leaf UI v0.2.0 will allow you to build full scaleable Leaf UI powered apps, write reactive UIs all in PHP. You can think of it as a PHP version of React.
+v0.2.0 of Leaf UI is currently in development. It's a complete rewrite of the library and will be released soon. It comes with a lot of new features and a new API. Leaf UI v0.2.0 will allow you to build full scalable Leaf UI powered apps, write reactive UIs all in PHP. You can think of it as a PHP version of React.
 
 ## Installing Leaf UI
 
@@ -124,33 +124,7 @@ Your cash contributions go a long way to help us make Leaf even better for you. 
 
 And to all our existing cash/code contributors, we love you all ❤️
 
-### Cash contributors
-
-<table>
-	<tr>
-		<td align="center">
-			<a href="https://opencollective.com/aaron-smith3">
-				<img src="https://images.opencollective.com/aaron-smith3/08ee620/avatar/256.png" width="120px" alt=""/>
-				<br />
-				<sub><b>Aaron Smith</b></sub>
-			</a>
-		</td>
-		<td align="center">
-			<a href="https://opencollective.com/peter-bogner">
-				<img src="https://images.opencollective.com/peter-bogner/avatar/256.png" width="120px" alt=""/>
-				<br />
-				<sub><b>Peter Bogner</b></sub>
-			</a>
-		</td>
-		<td align="center">
-			<a href="#">
-				<img src="https://images.opencollective.com/guest-32634fda/avatar.png" width="120px" alt=""/>
-				<br />
-				<sub><b>Vano</b></sub>
-			</a>
-		</td>
-	</tr>
-</table>
+View the [sponsors](https://leafphp.dev/support/) page to see all our sponsors.
 
 ## 🤯 Links/Projects
 
