@@ -35,3 +35,6 @@ export default class Component {
         render(this.uiNodes, directives);
     }
 }
+
+export const initComponent = (element: Element) =>
+    new Component().mount(element as HTMLElement);
