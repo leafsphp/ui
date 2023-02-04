@@ -25,7 +25,9 @@ class Core
                 $component->{$key} = $value;
             }
 
-            $component->{$data['payload']['method']}();
+            $data['payload']['methodArgs'] = explode(',', $data['payload']['methodArgs']);
+
+            call_user_func([$component, $data['payload']['method']], ...$data['payload']['methodArgs']);
 
             $state = [];
 

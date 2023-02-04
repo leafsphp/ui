@@ -14,6 +14,7 @@ export default class Connection {
             payload: {
                 params: [],
                 method: uiData.method,
+                methodArgs: uiData.methodArgs,
                 component: uiData.config.component,
                 data: uiData.config.data
             }
