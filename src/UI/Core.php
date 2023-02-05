@@ -48,7 +48,7 @@ class Core
             }
 
             return (new \Leaf\Http\Response)->json([
-                'html' => $component->render(),
+                'html' => static::compileTemplate($component->render(), $state),
                 'state' => $state,
             ]);
         }
@@ -65,7 +65,111 @@ class Core
                         requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
                     };
                 }
-            ']) . '</body>', $component->render()));
+            ']) . '</body>', static::compileTemplate($component->render(), get_class_vars($component::class))));
+    }
+
+    /**
+     * Render a Leaf UI from a file
+     * 
+     * @throws \JsonException
+     */
+    public static function view(string $filename): string
+    {
+        if (!file_exists($filename)) {
+            throw new \JsonException("$filename not found!");
+        }
+
+        return file_get_contents($filename);
+    }
+
+    /**
+     * Compile Leaf UI Template
+     * @param string $rawText The template to compile
+     */
+    public static function compileTemplate(string $rawText, array $state = []): string
+    {
+        // $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) {
+            /*/ return "<?php $matches[1]; ?>"; */
+        // }, $rawText);
+
+        $compiled = preg_replace_callback('/@if\((.*?)\)/', function ($matches) {
+            return "<?php if ($matches[1]): ?>";
+        }, $rawText);
+
+        $compiled = preg_replace_callback('/@elseif\((.*?)\)/', function ($matches) {
+            return "<?php elseif ($matches[1]): ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@else/', function ($matches) {
+            return "<?php else: ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@endif/', function ($matches) {
+            return "<?php endif; ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@for\((.*?)\)/', function ($matches) {
+            return "<?php for ($matches[1]): ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@endfor/', function ($matches) {
+            return "<?php endfor; ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@foreach\((.*?)\)/', function ($matches) {
+            return "<?php foreach ($matches[1]): ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@endforeach/', function ($matches) {
+            return "<?php endforeach; ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@while\((.*?)\)/', function ($matches) {
+            return "<?php while ($matches[1]): ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@endwhile/', function ($matches) {
+            return "<?php endwhile; ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@switch\((.*?)\)/', function ($matches) {
+            return "<?php switch ($matches[1]): ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@case\((.*?)\)/', function ($matches) {
+            return "<?php case $matches[1]: ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@break/', function ($matches) {
+            return "<?php break; ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@endswitch/', function ($matches) {
+            return "<?php endswitch; ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@continue/', function ($matches) {
+            return "<?php continue; ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@php(.*?)@endphp/', function ($matches) {
+            return "<?php $matches[1]; ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@include\((.*?)\)/', function ($matches) {
+            return "<?php echo Core::view($matches[1]); ?>";
+        }, $compiled);
+
+        $compiled = preg_replace_callback('/@component\((.*?)\)/', function ($matches) {
+            return "<?php echo Core::component($matches[1]); ?>";
+        }, $compiled);
+
+        extract($state);
+        ob_start();
+
+        echo $compiled;
+
+        return ob_get_clean();
     }
 
     /**
