@@ -66,7 +66,7 @@ class Test2 extends Component
                 Core::createElement('h1', [], $this->count),
                 Core::createElement('button', ['@click' => 'increment'], '+'),
             ]),
-            Core::createElement('script', ['src' => 'PATH/TO/LeafUI_.js'], ['']),
+            Core::init(),
         ]);
     }
 }
