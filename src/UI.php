@@ -2,6 +2,9 @@
 
 namespace Leaf;
 
+use Leaf\UI\Component;
+use Leaf\UI\Core;
+
 /**
  * Leaf UI
  * ---------------------
@@ -11,5 +14,11 @@ namespace Leaf;
  */
 class UI
 {
-    // 
+    /**
+     * @inheritDoc
+     */
+    public static function render(Component $component)
+    {
+        return Core::render($component);
+    }
 }
