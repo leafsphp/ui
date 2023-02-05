@@ -1,6 +1,5 @@
 node_modules
 tests
-dist
 *lock.yaml
 *lock.json
 ./index.php
