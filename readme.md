@@ -92,15 +92,15 @@ _This file is still being updated!_
 
 ## 💬 Stay In Touch
 
--   [Twitter](https://twitter.com/leafphp)
--   [Join the forum](https://github.com/leafsphp/leaf/discussions/37)
--   [Chat on discord](https://discord.com/invite/Pkrm9NJPE3)
+- [Twitter](https://twitter.com/leafphp)
+- [Join the forum](https://github.com/leafsphp/leaf/discussions/37)
+- [Chat on discord](https://discord.com/invite/Pkrm9NJPE3)
 
 ## 📓 Learning Leaf 3
 
--   Leaf has a very easy to understand [documentation](https://leafphp.dev) which contains information on all operations in Leaf.
--   You can also check out our [youtube channel](https://www.youtube.com/channel/UCllE-GsYy10RkxBUK0HIffw) which has video tutorials on different topics
--   We are also working on codelabs which will bring hands-on tutorials you can follow and contribute to.
+- Leaf has a very easy to understand [documentation](https://leafphp.dev) which contains information on all operations in Leaf.
+- You can also check out our [youtube channel](https://www.youtube.com/channel/UCllE-GsYy10RkxBUK0HIffw) which has video tutorials on different topics
+- We are also working on codelabs which will bring hands-on tutorials you can follow and contribute to.
 
 ## 😇 Contributing
 
