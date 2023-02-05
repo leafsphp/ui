@@ -17,7 +17,7 @@ class Core
      */
     public static function init(): string
     {
-        return static::createElement('script', ['src' => '/vendor/leafs/ui/client/dist/index.js'], ['']);
+        return static::createElement('script', ['src' => '/vendor/leafs/ui/client/dist/ui.cjs.production.min.js'], ['']);
     }
 
     /**
