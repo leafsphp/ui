@@ -12,6 +12,15 @@ use MatthiasMullie\Minify\CSS;
 class Core
 {
     /**
+     * Initialize Leaf UI on a page
+     * @return string
+     */
+    public static function init(): string
+    {
+        return static::createElement('script', ['src' => dirname(__DIR__, 2) . '/client/dist/ui.cjs.development.js'], ['']);
+    }
+
+    /**
      * Render a Leaf UI
      * 
      * @param Component|callable $component The Leaf UI component to render
