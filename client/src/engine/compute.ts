@@ -13,7 +13,7 @@ export const compute = (
     // This is because raw function is ~50,000x faster than new Function
     const computeFunction = new Function(
         `return (${specialPropertiesNames.join(',')}) => {
-            const method = ${JSON.stringify(expression)}.substring(0, ${JSON.stringify(expression)}.indexOf('('));
+            const method = ${JSON.stringify(expression)}.split('(')[0];
             const methodArgs = ${JSON.stringify(expression)}.substring(${JSON.stringify(expression)}.indexOf('(') + 1, ${JSON.stringify(expression)}.lastIndexOf(')'));
 
             if (!window._leafUIConfig.methods.includes(method)) {
