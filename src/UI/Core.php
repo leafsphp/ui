@@ -55,17 +55,15 @@ class Core
 
         (new \Leaf\Http\Response)
             ->markup(str_replace('</body>', Core::createElement('script', [], ['
-                window.onload = function() {
-                    window._leafUIConfig = {
-                        el: document.querySelector("body"),
-                        component: "' . $component::class . '",
-                        data: ' . json_encode(get_class_vars($component::class)) . ',
-                        methods: ' . json_encode(get_class_methods($component::class)) . ',
-                        path: "' . $_SERVER['REQUEST_URI'] . '",
-                        requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
-                    };
-                }
-            ']) . '</body>', static::compileTemplate($component->render(), get_class_vars($component::class))));
+                window._leafUIConfig = {
+                    el: document.querySelector("body"),
+                    component: "' . $component::class . '",
+                    data: ' . json_encode(get_class_vars($component::class)) . ',
+                    methods: ' . json_encode(get_class_methods($component::class)) . ',
+                    path: "' . $_SERVER['REQUEST_URI'] . '",
+                    requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
+                };
+            ']) . Core::init() . '</body>', static::compileTemplate($component->render(), get_class_vars($component::class))));
     }
 
     /**
@@ -89,7 +87,7 @@ class Core
     public static function compileTemplate(string $rawText, array $state = []): string
     {
         // $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) {
-            /*/ return "<?php $matches[1]; ?>"; */
+        /*/ return "<?php $matches[1]; ?>"; */
         // }, $rawText);
 
         $compiled = preg_replace_callback('/@if\((.*?)\)/', function ($matches) {
