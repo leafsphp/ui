@@ -470,10 +470,42 @@ function arraysMatch(a, b) {
 }
 window.leafUI = window.leafUI || {};
 
+var template = /*#__PURE__*/function () {
+  function template() {}
+  template.findAll = function findAll(el) {
+    var elementsWithData = [];
+    var _loop = function _loop() {
+      var child = el.children[i];
+      var html = child.innerHTML;
+      child.compile = function () {
+        return template.compile(child);
+      };
+      if (/{{\s*\$(\w+)\s*}}/g.test(html)) {
+        elementsWithData.push(child);
+      }
+    };
+    for (var i = 0; i < el.children.length; i++) {
+      _loop();
+    }
+    return elementsWithData;
+  };
+  template.compile = function compile(element) {
+    var _window$_leafUIConfig, _window$_leafUIConfig2, _varToUpdate$0$replac, _varToUpdate$;
+    var varToUpdate = element.textContent.match(/{{\s*\$(\w+)\s*}}/g);
+    element.textContent = (_window$_leafUIConfig = window._leafUIConfig) == null ? void 0 : (_window$_leafUIConfig2 = _window$_leafUIConfig.data) == null ? void 0 : _window$_leafUIConfig2[(_varToUpdate$0$replac = varToUpdate == null ? void 0 : (_varToUpdate$ = varToUpdate[0]) == null ? void 0 : _varToUpdate$.replace(/{{\s*\$(\w+)\s*}}/g, '$1')) != null ? _varToUpdate$0$replac : ''];
+    element.textContent = element.textContent.replace(/{{\s*\$(\w+)\s*\|\s*(\w+)\s*}}/g, '${$2($1)}');
+    return element;
+  };
+  return template;
+}();
+
 var Dom = /*#__PURE__*/function () {
   function Dom() {}
   Dom.diff = function diff(newNode, oldNode) {
     var newDomBody = Dom.getBodyWithoutScripts(newNode);
+    template.findAll(newDomBody).map(function (el) {
+      return el.compile();
+    });
     var diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
     var _loop = function _loop(i) {
       if (diff[i] instanceof HTMLScriptElement || diff[i].oldNode.children.length !== 0) {
@@ -827,9 +859,11 @@ var Component = /*#__PURE__*/function () {
   var _proto = Component.prototype;
   _proto.mount = function mount(el) {
     var rootEl = el instanceof HTMLElement ? el : document.querySelector(el) || document.body;
+    template.findAll(rootEl).map(function (el) {
+      return el.compile();
+    });
     this.uiNodes = compile(rootEl);
     this.render();
-    // @ts-expect-error
     rootEl['component'] = this;
     return this;
   }
