@@ -31,7 +31,7 @@ This will install Leaf UI into your application. You don't have to worry about b
 
 After this, you can use all of Leaf UI's methods and components.
 
-View the [mini documentation here](//leafphp.netlify.app/#//ui/)
+View the [documentation here](https://ui.leafphp.dev)
 
 ## Building your first Leaf UI
 
@@ -66,7 +66,6 @@ class Test2 extends Component
                 Core::createElement('h1', [], $this->count),
                 Core::createElement('button', ['@click' => 'increment'], '+'),
             ]),
-            Core::init(),
         ]);
     }
 }
