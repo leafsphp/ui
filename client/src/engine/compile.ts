@@ -1,8 +1,6 @@
 import { DirectiveData, UINode, UINodeType } from '../@types/core';
 import { compute } from './compute';
-import {
-    DIRECTIVE_SHORTHANDS,
-} from '../utils/data';
+import { DIRECTIVE_SHORTHANDS } from '../utils/data';
 
 export const flattenElementChildren = (
     rootElement: HTMLElement,
@@ -82,9 +80,7 @@ export const initDirectives = (
     return directives;
 };
 
-export const createASTNode = (
-    el: HTMLElement,
-): UINode | undefined => {
+export const createASTNode = (el: HTMLElement): UINode | undefined => {
     const directives = initDirectives(el);
     const hasDirectives = Object.keys(directives).length > 0;
     const node = { el, directives, type: UINodeType.STATIC };
