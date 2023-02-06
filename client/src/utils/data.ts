@@ -36,6 +36,11 @@ declare global {
         leafUI: Component;
         _leafUIConfig: LeafUIConfig;
     }
+
+    interface HTMLElement {
+        component: Component;
+        compile: () => void;
+    }
 }
 
 window.leafUI = window.leafUI || {};
