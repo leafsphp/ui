@@ -2,6 +2,7 @@ import { UINode } from './../@types/core';
 import { compile } from '../engine/compile';
 import render from '../engine/render';
 import { directives } from './directives';
+import template from './../engine/template';
 
 export default class Component {
     public uiNodes: UINode[] = [];
@@ -16,11 +17,11 @@ export default class Component {
                 ? el
                 : document.querySelector<HTMLElement>(el) || document.body;
 
+        template.findAll(rootEl).map(el => el.compile());
         this.uiNodes = compile(rootEl);
 
         this.render();
 
-        // @ts-expect-error
         rootEl['component'] = this;
 
         return this;
