@@ -389,6 +389,46 @@ var error = function error(err, expression, el) {
   console.warn(message, el);
 };
 
+var template = /*#__PURE__*/function () {
+  function template() {}
+  template.findAll = function findAll(el) {
+    var elementsWithData = [];
+    var _loop = function _loop() {
+      var child = el.children[i];
+      var html = child.innerHTML;
+      child.compile = function () {
+        return template.compile(child);
+      };
+      if (/{{\s*\$(\w+)\s*}}/g.test(html)) {
+        elementsWithData.push(child);
+      }
+    };
+    for (var i = 0; i < el.children.length; i++) {
+      _loop();
+    }
+    return elementsWithData;
+  };
+  template.compile = function compile(element) {
+    var varsToUpdate = element.textContent.matchAll(/{{\s*\$(\w+)\s*}}/g);
+    for (var _iterator = _createForOfIteratorHelperLoose(varsToUpdate), _step; !(_step = _iterator()).done;) {
+      var _window$_leafUIConfig, _window$_leafUIConfig2, _window$_leafUIConfig3;
+      var varToUpdate = _step.value;
+      element.textContent = eval(element.textContent.replace(varToUpdate[0], (_window$_leafUIConfig = (_window$_leafUIConfig2 = window._leafUIConfig) == null ? void 0 : (_window$_leafUIConfig3 = _window$_leafUIConfig2.data) == null ? void 0 : _window$_leafUIConfig3[varToUpdate[1]]) != null ? _window$_leafUIConfig : ''));
+    }
+    return element;
+  };
+  template.compileString = function compileString(str) {
+    var varsToUpdate = str.matchAll(/{{\s*\$(\w+)\s*}}/g);
+    for (var _iterator2 = _createForOfIteratorHelperLoose(varsToUpdate), _step2; !(_step2 = _iterator2()).done;) {
+      var _window$_leafUIConfig4, _window$_leafUIConfig5, _window$_leafUIConfig6;
+      var varToUpdate = _step2.value;
+      str = str.replace(varToUpdate[0], (_window$_leafUIConfig4 = (_window$_leafUIConfig5 = window._leafUIConfig) == null ? void 0 : (_window$_leafUIConfig6 = _window$_leafUIConfig5.data) == null ? void 0 : _window$_leafUIConfig6[varToUpdate[1]]) != null ? _window$_leafUIConfig4 : '');
+    }
+    return eval(str);
+  };
+  return template;
+}();
+
 var Connection = /*#__PURE__*/function () {
   function Connection() {}
   Connection.connect = function connect(type, uiData, dom) {
@@ -397,7 +437,7 @@ var Connection = /*#__PURE__*/function () {
       payload: {
         params: [],
         method: uiData.method,
-        methodArgs: uiData.methodArgs,
+        methodArgs: template.compileString(uiData.methodArgs),
         component: uiData.config.component,
         data: uiData.config.data
       }
@@ -467,35 +507,6 @@ function arraysMatch(a, b) {
   });
 }
 window.leafUI = window.leafUI || {};
-
-var template = /*#__PURE__*/function () {
-  function template() {}
-  template.findAll = function findAll(el) {
-    var elementsWithData = [];
-    var _loop = function _loop() {
-      var child = el.children[i];
-      var html = child.innerHTML;
-      child.compile = function () {
-        return template.compile(child);
-      };
-      if (/{{\s*\$(\w+)\s*}}/g.test(html)) {
-        elementsWithData.push(child);
-      }
-    };
-    for (var i = 0; i < el.children.length; i++) {
-      _loop();
-    }
-    return elementsWithData;
-  };
-  template.compile = function compile(element) {
-    var _window$_leafUIConfig, _window$_leafUIConfig2, _varToUpdate$0$replac, _varToUpdate$;
-    var varToUpdate = element.textContent.match(/{{\s*\$(\w+)\s*}}/g);
-    element.textContent = (_window$_leafUIConfig = window._leafUIConfig) == null ? void 0 : (_window$_leafUIConfig2 = _window$_leafUIConfig.data) == null ? void 0 : _window$_leafUIConfig2[(_varToUpdate$0$replac = varToUpdate == null ? void 0 : (_varToUpdate$ = varToUpdate[0]) == null ? void 0 : _varToUpdate$.replace(/{{\s*\$(\w+)\s*}}/g, '$1')) != null ? _varToUpdate$0$replac : ''];
-    element.textContent = element.textContent.replace(/{{\s*\$(\w+)\s*\|\s*(\w+)\s*}}/g, '${$2($1)}');
-    return element;
-  };
-  return template;
-}();
 
 var Dom = /*#__PURE__*/function () {
   function Dom() {}

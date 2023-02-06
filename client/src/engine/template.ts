@@ -6,7 +6,8 @@ export default class template {
             const child = el.children[i];
             const html = child.innerHTML;
 
-            (child as HTMLElement).compile = () => template.compile(child as HTMLElement);
+            (child as HTMLElement).compile = () =>
+                template.compile(child as HTMLElement);
 
             if (/{{\s*\$(\w+)\s*}}/g.test(html)) {
                 elementsWithData.push(child as HTMLElement);
@@ -17,13 +18,32 @@ export default class template {
     }
 
     static compile(element: HTMLElement): HTMLElement {
-        const varToUpdate = element.textContent!.match(/{{\s*\$(\w+)\s*}}/g);
-        element.textContent =
-            window._leafUIConfig?.data?.[
-                varToUpdate?.[0]?.replace(/{{\s*\$(\w+)\s*}}/g, '$1') ?? ''
-            ];
-        element.textContent = element.textContent!.replace(/{{\s*\$(\w+)\s*\|\s*(\w+)\s*}}/g, '${$2($1)}')!;
+        const varsToUpdate = element.textContent!.matchAll(
+            /{{\s*\$(\w+)\s*}}/g
+        );
+
+        for (const varToUpdate of varsToUpdate) {
+            element.textContent = eval(
+                element.textContent!.replace(
+                    varToUpdate[0],
+                    window._leafUIConfig?.data?.[varToUpdate[1]] ?? ''
+                )
+            );
+        }
 
         return element;
+    }
+
+    static compileString(str: string) {
+        const varsToUpdate = str.matchAll(/{{\s*\$(\w+)\s*}}/g);
+
+        for (const varToUpdate of varsToUpdate) {
+            str = str.replace(
+                varToUpdate[0],
+                window._leafUIConfig?.data?.[varToUpdate[1]] ?? ''
+            );
+        }
+
+        return eval(str);
     }
 }
