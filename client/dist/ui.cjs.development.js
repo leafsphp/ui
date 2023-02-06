@@ -401,7 +401,7 @@ var template = /*#__PURE__*/function () {
       child.compile = function () {
         return template.compile(child);
       };
-      if (/{{\s*\$(\w+)\s*}}/g.test(html)) {
+      if (/{{(.*?)}}/g.test(html)) {
         elementsWithData.push(child);
       }
     };
@@ -411,22 +411,34 @@ var template = /*#__PURE__*/function () {
     return elementsWithData;
   };
   template.compile = function compile(element) {
+    var _element$textContent$;
     var varsToUpdate = element.textContent.matchAll(/{{\s*\$(\w+)\s*}}/g);
     for (var _iterator = _createForOfIteratorHelperLoose(varsToUpdate), _step; !(_step = _iterator()).done;) {
       var _window$_leafUIConfig, _window$_leafUIConfig2, _window$_leafUIConfig3;
       var varToUpdate = _step.value;
-      element.textContent = eval(element.textContent.replace(varToUpdate[0], (_window$_leafUIConfig = (_window$_leafUIConfig2 = window._leafUIConfig) == null ? void 0 : (_window$_leafUIConfig3 = _window$_leafUIConfig2.data) == null ? void 0 : _window$_leafUIConfig3[varToUpdate[1]]) != null ? _window$_leafUIConfig : ''));
+      element.textContent = element.textContent.replace(varToUpdate[0], (_window$_leafUIConfig = (_window$_leafUIConfig2 = window._leafUIConfig) == null ? void 0 : (_window$_leafUIConfig3 = _window$_leafUIConfig2.data) == null ? void 0 : _window$_leafUIConfig3[varToUpdate[1]]) != null ? _window$_leafUIConfig : '');
     }
+    var itemsToEval = element.textContent.matchAll(/\$eval\((.*)\)/g);
+    for (var _iterator2 = _createForOfIteratorHelperLoose(itemsToEval), _step2; !(_step2 = _iterator2()).done;) {
+      var _eval;
+      var itemToEval = _step2.value;
+      element.textContent = element.textContent.replace(itemToEval[0], (_eval = eval(itemToEval[1])) != null ? _eval : '');
+    }
+    element.textContent = (_element$textContent$ = element.textContent.replace(/{{(.*?)}}/g, '$1')) != null ? _element$textContent$ : element.textContent;
     return element;
   };
   template.compileString = function compileString(str) {
     var varsToUpdate = str.matchAll(/{{\s*\$(\w+)\s*}}/g);
-    for (var _iterator2 = _createForOfIteratorHelperLoose(varsToUpdate), _step2; !(_step2 = _iterator2()).done;) {
+    for (var _iterator3 = _createForOfIteratorHelperLoose(varsToUpdate), _step3; !(_step3 = _iterator3()).done;) {
       var _window$_leafUIConfig4, _window$_leafUIConfig5, _window$_leafUIConfig6;
-      var varToUpdate = _step2.value;
+      var varToUpdate = _step3.value;
       str = str.replace(varToUpdate[0], (_window$_leafUIConfig4 = (_window$_leafUIConfig5 = window._leafUIConfig) == null ? void 0 : (_window$_leafUIConfig6 = _window$_leafUIConfig5.data) == null ? void 0 : _window$_leafUIConfig6[varToUpdate[1]]) != null ? _window$_leafUIConfig4 : '');
     }
-    return eval(str);
+    if (str.includes('$eval(')) {
+      var evalString = str.match(/\$eval\((.*)\)/)[1];
+      return eval(evalString);
+    }
+    return str;
   };
   return template;
 }();

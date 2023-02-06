@@ -9,7 +9,7 @@ export default class template {
             (child as HTMLElement).compile = () =>
                 template.compile(child as HTMLElement);
 
-            if (/{{\s*\$(\w+)\s*}}/g.test(html)) {
+            if (/{{(.*?)}}/g.test(html)) {
                 elementsWithData.push(child as HTMLElement);
             }
         }
@@ -23,13 +23,22 @@ export default class template {
         );
 
         for (const varToUpdate of varsToUpdate) {
-            element.textContent = eval(
-                element.textContent!.replace(
-                    varToUpdate[0],
-                    window._leafUIConfig?.data?.[varToUpdate[1]] ?? ''
-                )
+            element.textContent = element.textContent!.replace(
+                varToUpdate[0],
+                window._leafUIConfig?.data?.[varToUpdate[1]] ?? ''
             );
         }
+
+        const itemsToEval = element.textContent!.matchAll(/\$eval\((.*)\)/g);
+        
+        for (const itemToEval of itemsToEval) {
+            element.textContent = element.textContent!.replace(
+                itemToEval[0],
+                eval(itemToEval[1]) ?? ''
+            );
+        }
+
+        element.textContent = element.textContent!.replace(/{{(.*?)}}/g, '$1') ?? element.textContent;
 
         return element;
     }
@@ -44,6 +53,11 @@ export default class template {
             );
         }
 
-        return eval(str);
+        if (str.includes('$eval(')) {
+            const evalString = str.match(/\$eval\((.*)\)/)![1];
+            return eval(evalString);
+        }
+
+        return str;
     }
 }
