@@ -391,18 +391,6 @@ var error = function error(err, expression, el) {
   console.warn(message, el);
 };
 
-var template = /*#__PURE__*/function () {
-  function template() {}
-  template.compileString = function compileString(str) {
-    if (str.includes('$eval(')) {
-      var evalString = str.match(/\$eval\((.*)\)/)[1];
-      return eval(evalString);
-    }
-    return str;
-  };
-  return template;
-}();
-
 var Connection = /*#__PURE__*/function () {
   function Connection() {}
   Connection.connect = function connect(type, uiData, dom) {
@@ -411,7 +399,7 @@ var Connection = /*#__PURE__*/function () {
       payload: {
         params: [],
         method: uiData.method,
-        methodArgs: template.compileString(uiData.methodArgs),
+        methodArgs: uiData.methodArgs,
         component: uiData.config.component,
         data: uiData.config.data
       }

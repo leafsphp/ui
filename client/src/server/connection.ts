@@ -1,5 +1,4 @@
 import Dom from './../engine/dom';
-import template from './../engine/template';
 import { error } from './../utils/error';
 
 export default class Connection {
@@ -15,7 +14,7 @@ export default class Connection {
             payload: {
                 params: [],
                 method: uiData.method,
-                methodArgs: template.compileString(uiData.methodArgs),
+                methodArgs: uiData.methodArgs,
                 component: uiData.config.component,
                 data: uiData.config.data
             }
