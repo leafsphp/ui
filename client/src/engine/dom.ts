@@ -1,11 +1,9 @@
 import { initComponent } from './../core/component';
 import { DIRECTIVE_SHORTHANDS, arraysMatch } from './../utils/data';
-import template from './template';
 
 export default class Dom {
     static diff(newNode: string, oldNode: HTMLElement): void {
         const newDomBody = Dom.getBodyWithoutScripts(newNode);
-        template.findAll(newDomBody).map(el => el.compile());
         const diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
 
         for (let i = 0; i < diff.length; i++) {

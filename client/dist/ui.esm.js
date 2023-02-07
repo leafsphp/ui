@@ -391,34 +391,6 @@ var error = function error(err, expression, el) {
 
 var template = /*#__PURE__*/function () {
   function template() {}
-  template.findAll = function findAll(el) {
-    var elementsWithData = [];
-    var _loop = function _loop() {
-      var child = el.children[i];
-      var html = child.innerHTML;
-      child.compile = function () {
-        return template.compile(child);
-      };
-      if (/\$eval\(.*?\)/.test(html)) {
-        elementsWithData.push(child);
-      }
-    };
-    for (var i = 0; i < el.children.length; i++) {
-      _loop();
-    }
-    return elementsWithData;
-  };
-  template.compile = function compile(element) {
-    var _element$textContent$;
-    var itemsToEval = element.textContent.matchAll(/\$eval\((.*)\)/g);
-    for (var _iterator = _createForOfIteratorHelperLoose(itemsToEval), _step; !(_step = _iterator()).done;) {
-      var _eval;
-      var itemToEval = _step.value;
-      element.textContent = element.textContent.replace(itemToEval[0], (_eval = eval(itemToEval[1])) != null ? _eval : '');
-    }
-    element.textContent = (_element$textContent$ = element.textContent.replace(/{{(.*?)}}/g, '$1')) != null ? _element$textContent$ : element.textContent;
-    return element;
-  };
   template.compileString = function compileString(str) {
     if (str.includes('$eval(')) {
       var evalString = str.match(/\$eval\((.*)\)/)[1];
@@ -512,9 +484,6 @@ var Dom = /*#__PURE__*/function () {
   function Dom() {}
   Dom.diff = function diff(newNode, oldNode) {
     var newDomBody = Dom.getBodyWithoutScripts(newNode);
-    template.findAll(newDomBody).map(function (el) {
-      return el.compile();
-    });
     var diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
     var _loop = function _loop(i) {
       if (diff[i] instanceof HTMLScriptElement || diff[i].oldNode.children.length !== 0) {
@@ -868,9 +837,6 @@ var Component = /*#__PURE__*/function () {
   var _proto = Component.prototype;
   _proto.mount = function mount(el) {
     var rootEl = el instanceof HTMLElement ? el : document.querySelector(el) || document.body;
-    template.findAll(rootEl).map(function (el) {
-      return el.compile();
-    });
     this.uiNodes = compile(rootEl);
     this.render();
     rootEl['component'] = this;
