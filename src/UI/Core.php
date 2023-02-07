@@ -63,7 +63,7 @@ class Core
                     path: "' . $_SERVER['REQUEST_URI'] . '",
                     requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
                 };
-            ']) . Core::init(), static::compileTemplate($component->render(), get_class_vars($component::class))));
+            ']) . Core::init() . '</body>', static::compileTemplate($component->render(), get_class_vars($component::class))));
     }
 
     /**
@@ -89,6 +89,10 @@ class Core
         $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) use($state) {
             return $state[ltrim(trim($matches[1]), '$')] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
         }, $rawText);
+
+        $compiled = preg_replace_callback('/\$eval\((.*?)\)/', function ($matches) use ($state) {
+            return eval("return $matches[1];");
+        }, $compiled);
 
         $compiled = preg_replace_callback('/@if\([\s\S]*?\)\s*[\s\S]*?(\s*@endif\s*)/', function ($matches) use ($state) {
             $renderedData = '';
