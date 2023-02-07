@@ -91,7 +91,11 @@ class Core
         }, $rawText);
 
         $compiled = preg_replace_callback('/\$eval\((.*?)\)/', function ($matches) use ($state) {
-            return eval("return $matches[1];");
+            $compiledWithVars = preg_replace_callback('/\$([a-zA-Z0-9_]+)/', function ($matches) use ($state) {
+                return $state[$matches[1]] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
+            }, $matches[1]);
+
+            return eval("return $compiledWithVars;");
         }, $compiled);
 
         $compiled = preg_replace_callback('/@if\([\s\S]*?\)\s*[\s\S]*?(\s*@endif\s*)/', function ($matches) use ($state) {
