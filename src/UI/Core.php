@@ -86,25 +86,9 @@ class Core
      */
     public static function compileTemplate(string $rawText, array $state = []): string
     {
-        // $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) {
-        /*/ return "<?php $matches[1]; ?>"; */
-        // }, $rawText);
-
-        $compiled = preg_replace_callback('/@if\((.*?)\)/', function ($matches) {
-            return "<?php if ($matches[1]): ?>";
+        $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) use($state) {
+            return $state[ltrim(trim($matches[1]), '$')] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
         }, $rawText);
-
-        $compiled = preg_replace_callback('/@elseif\((.*?)\)/', function ($matches) {
-            return "<?php elseif ($matches[1]): ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@else/', function ($matches) {
-            return "<?php else: ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@endif/', function ($matches) {
-            return "<?php endif; ?>";
-        }, $compiled);
 
         $compiled = preg_replace_callback('/@for\((.*?)\)/', function ($matches) {
             return "<?php for ($matches[1]): ?>";
@@ -162,12 +146,7 @@ class Core
             return "<?php echo Core::component($matches[1]); ?>";
         }, $compiled);
 
-        extract($state);
-        ob_start();
-
-        echo $compiled;
-
-        return ob_get_clean();
+        return $compiled;
     }
 
     /**
