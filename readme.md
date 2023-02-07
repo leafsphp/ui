@@ -31,7 +31,7 @@ This will install Leaf UI into your application. You don't have to worry about b
 
 After this, you can use all of Leaf UI's methods and components.
 
-View the [documentation here](https://ui.leafphp.dev)
+View the [documentation here](https://staging.ui.leafphp.dev/)
 
 ## Building your first Leaf UI
 
