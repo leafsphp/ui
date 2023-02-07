@@ -63,7 +63,7 @@ class Core
                     path: "' . $_SERVER['REQUEST_URI'] . '",
                     requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
                 };
-            ']) . Core::init() . '</body>', static::compileTemplate($component->render(), get_class_vars($component::class))));
+            ']) . Core::init(), static::compileTemplate($component->render(), get_class_vars($component::class))));
     }
 
     /**
@@ -89,6 +89,36 @@ class Core
         $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) use($state) {
             return $state[ltrim(trim($matches[1]), '$')] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
         }, $rawText);
+
+        $compiled = preg_replace_callback('/@if\([\s\S]*?\)\s*[\s\S]*?(\s*@endif\s*)/', function ($matches) use ($state) {
+            $renderedData = '';
+            $compiledWithParsedConditions = preg_replace_callback('/\$([a-zA-Z0-9_]+)/', function ($matches) use ($state) {
+                return $state[$matches[1]] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
+            }, $matches[0]);
+
+            preg_match('/@if\((.*?)\)/', $compiledWithParsedConditions, $condition);
+
+            if (eval("return $condition[1];") === true) {
+                preg_match('/@if\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*;)/', $compiledWithParsedConditions, $ifConditionMatches);
+                $renderedData = preg_replace('/@if\([\s\S]*?\)\s*[\s\S]*?/', '', $ifConditionMatches[0]);
+                $renderedData = preg_replace('/\s*@elseif\([\s\S]*?\)\s*[\s\S]*?/', '', $renderedData);
+            } else {
+                if (strpos($compiledWithParsedConditions, '@elseif') !== false) {
+                    preg_match('/@elseif\((.*?)\)/', $compiledWithParsedConditions, $elseifCondition);
+
+                    if (eval("return $elseifCondition[1];") === true) {
+                        preg_match('/@elseif\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*;)/', $compiledWithParsedConditions, $elseifConditionMatches);
+                        $renderedData = preg_replace('/@elseif\([\s\S]*?\)\s*[\s\S]*?/', '', $elseifConditionMatches[0]);
+                        $renderedData = preg_replace('/\s*@else\s*[\s\S]*?/', '', $renderedData);
+                    } else if (strpos($compiledWithParsedConditions, '@else') !== false) {
+                        preg_match('/@else\s*(.*?)\s*@endif/', $compiledWithParsedConditions, $elseConditionMatches);
+                        $renderedData = $elseConditionMatches[1];
+                    }
+                }
+            }
+
+            return $renderedData;
+        }, $compiled);
 
         $compiled = preg_replace_callback('/@for\((.*?)\)/', function ($matches) {
             return "<?php for ($matches[1]): ?>";
