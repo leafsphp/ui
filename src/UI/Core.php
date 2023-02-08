@@ -107,7 +107,7 @@ class Core
             preg_match('/@if\((.*?)\)/', $compiledWithParsedConditions, $condition);
 
             if (eval("return $condition[1];") === true) {
-                preg_match('/@if\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*;)/', $compiledWithParsedConditions, $ifConditionMatches);
+                preg_match('/@if\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*)/', $compiledWithParsedConditions, $ifConditionMatches);
                 $renderedData = preg_replace('/@if\([\s\S]*?\)\s*[\s\S]*?/', '', $ifConditionMatches[0]);
                 $renderedData = preg_replace('/\s*@elseif\([\s\S]*?\)\s*[\s\S]*?/', '', $renderedData);
             } else {
@@ -115,7 +115,7 @@ class Core
                     preg_match('/@elseif\((.*?)\)/', $compiledWithParsedConditions, $elseifCondition);
 
                     if (eval("return $elseifCondition[1];") === true) {
-                        preg_match('/@elseif\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*;)/', $compiledWithParsedConditions, $elseifConditionMatches);
+                        preg_match('/@elseif\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*)/', $compiledWithParsedConditions, $elseifConditionMatches);
                         $renderedData = preg_replace('/@elseif\([\s\S]*?\)\s*[\s\S]*?/', '', $elseifConditionMatches[0]);
                         $renderedData = preg_replace('/\s*@else\s*[\s\S]*?/', '', $renderedData);
                     } else if (strpos($compiledWithParsedConditions, '@else') !== false) {
@@ -172,12 +172,18 @@ class Core
             return "<?php continue; ?>";
         }, $compiled);
 
-        $compiled = preg_replace_callback('/@php(.*?)@endphp/', function ($matches) {
-            return "<?php $matches[1]; ?>";
+        $compiled = preg_replace_callback('/@php\s*([\s\S]+?)\s*@endphp/', function ($matches) {
+            return eval($matches[1]);
         }, $compiled);
 
-        $compiled = preg_replace_callback('/@include\((.*?)\)/', function ($matches) {
-            return "<?php echo Core::view($matches[1]); ?>";
+        $compiled = preg_replace_callback('/@include\((.*?)\)/', function ($matches) use($state) {
+            $viewToInclude = trim($matches[1], '"\'\`');
+
+            $compiledWithVars = preg_replace_callback('/\$([a-zA-Z0-9_]+)/', function ($matches) use ($state) {
+                return $state[$matches[1]] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
+            }, $viewToInclude);
+
+            return Core::view($compiledWithVars);
         }, $compiled);
 
         $compiled = preg_replace_callback('/@component\((.*?)\)/', function ($matches) {
