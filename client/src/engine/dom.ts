@@ -1,86 +1,112 @@
 import { initComponent } from './../core/component';
-import { DIRECTIVE_SHORTHANDS, arraysMatch } from './../utils/data';
 
 export default class Dom {
     static diff(newNode: string, oldNode: HTMLElement): void {
-        const newDomBody = Dom.getBodyWithoutScripts(newNode);
-        const diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
+        const newDomBody = Dom.getBody(newNode, true);
+        const newNodes = Array.prototype.slice.call(newDomBody.childNodes);
+        const oldNodes = Array.prototype.slice.call(oldNode.childNodes);
 
-        for (let i = 0; i < diff.length; i++) {
-            if (
-                diff[i] instanceof HTMLScriptElement ||
-                diff[i].oldNode.children.length !== 0
-            ) {
-                continue;
+        /**
+         * Get the type for a node
+         * @param  {Node}   node The node
+         * @return {String}      The type
+         */
+        const getNodeType = (node: HTMLElement) => {
+            if (node.nodeType === 3) return 'text';
+            if (node.nodeType === 8) return 'comment';
+            return node.tagName.toLowerCase();
+        };
+
+        /**
+         * Get the content from a node
+         * @param  {Node}   node The node
+         * @return {String}      The type
+         */
+        const getNodeContent = (node: HTMLElement) => {
+            if (node.childNodes && node.childNodes.length > 0) return null;
+            return node.textContent;
+        };
+
+        // const diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
+
+        // If extra elements in DOM, remove them
+        var count = oldNodes.length - newNodes.length;
+        if (count > 0) {
+            for (; count > 0; count--) {
+                oldNodes[oldNodes.length - count].parentNode.removeChild(
+                    oldNodes[oldNodes.length - count]
+                );
             }
-
-            if (
-                arraysMatch(
-                    Object.keys(diff[i].oldNode.attributes),
-                    Object.keys(diff[i].newNode.attributes)
-                ) &&
-                arraysMatch(
-                    Object.values(diff[i].oldNode.attributes),
-                    Object.values(diff[i].newNode.attributes)
-                ) &&
-                diff[i].oldNode.innerHTML === diff[i].newNode.innerHTML
-            ) {
-                continue;
-            }
-
-            const hasDirectivePrefix = Object.values(diff[i].oldNode.attributes)
-                .map(attr => attr.name.startsWith('ui-'))
-                .includes(true);
-            const hasDirectiveShorthandPrefix = Object.keys(
-                DIRECTIVE_SHORTHANDS
-            ).some(shorthand =>
-                Object.values(diff[i].oldNode.attributes)
-                    .map(attr => attr.name.startsWith(shorthand))
-                    .includes(true)
-            );
-
-            if (hasDirectivePrefix || hasDirectiveShorthandPrefix) {
-                diff[i].oldNode.innerHTML = diff[i].newNode.innerHTML;
-
-                for (let j = 0; j < diff[i].newNode.attributes.length; j++) {
-                    const attr = diff[i].newNode.attributes[j];
-
-                    if (
-                        attr.name.startsWith('ui-') ||
-                        Object.keys(DIRECTIVE_SHORTHANDS).some(shorthand =>
-                            Object.values(diff[i].oldNode.attributes)
-                                .map(attr => attr.name.startsWith(shorthand))
-                                .includes(true)
-                        )
-                    ) {
-                        if (
-                            diff[i].oldNode.getAttribute(attr.name) !==
-                            attr.value
-                        ) {
-                            diff[i].oldNode.replaceWith(diff[i].newNode);
-                            initComponent(diff[i].newNode);
-                        }
-
-                        continue;
-                    }
-
-                    diff[i].oldNode.setAttribute(attr.name, attr.value);
-                }
-
-                continue;
-            }
-
-            diff[i].oldNode.replaceWith(diff[i].newNode);
         }
+
+        // Diff each item in the newNodes
+        newNodes.forEach(function(node, index) {
+            // If element doesn't exist, create it
+            if (!oldNodes[index]) {
+                const newNodeClone = node.cloneNode(true);
+                oldNode.appendChild(newNodeClone);
+                initComponent(newNodeClone);
+                return;
+            }
+
+            // If element is not the same type, replace it with new element
+            if (getNodeType(node) !== getNodeType(oldNodes[index])) {
+                const newNodeClone = node.cloneNode(true);
+                oldNodes[index].parentNode.replaceChild(
+                    newNodeClone,
+                    oldNodes[index]
+                );
+                initComponent(newNodeClone);
+                return;
+            }
+
+            // If content is different, update it
+            const templateContent = getNodeContent(node);
+            if (
+                templateContent &&
+                templateContent !== getNodeContent(oldNodes[index])
+            ) {
+                oldNodes[index].textContent = templateContent;
+            }
+
+            if (
+                oldNodes[index].childNodes.length > 0 &&
+                node.childNodes.length < 1
+            ) {
+                oldNodes[index].innerHTML = '';
+                return;
+            }
+
+            if (
+                oldNodes[index].childNodes.length < 1 &&
+                node.childNodes.length > 0
+            ) {
+                var fragment = document.createDocumentFragment();
+                Dom.diff(node, fragment as any);
+                oldNodes[index].appendChild(fragment);
+                initComponent(node);
+                return;
+            }
+
+            if (node.childNodes.length > 0) {
+                Dom.diff(node, oldNodes[index]);
+                initComponent(node);
+            }
+        });
+
+        // console.log(futureNodes);
     }
 
-    static getBodyWithoutScripts(html: string): HTMLElement {
+    static getBody(html: string, removeScripts: boolean = false): HTMLElement {
         const parser = new DOMParser();
         const dom = parser.parseFromString(html, 'text/html');
-        const scripts = dom.getElementsByTagName('script');
 
-        for (let i = 0; i < scripts.length; i++) {
-            scripts[i].remove();
+        if (removeScripts) {
+            const scripts = dom.body.getElementsByTagName('script');
+
+            for (let i = 0; i < scripts.length; i++) {
+                scripts[i].remove();
+            }
         }
 
         return dom.body;
@@ -93,17 +119,24 @@ export default class Dom {
     static compareNodesAndReturnChanges(
         newNode: HTMLElement,
         oldNode: HTMLElement
-    ): Record<string, Element>[] {
+    ): Record<string, Element | null>[] {
         const newNodes = Dom.flattenDomIntoArray(newNode);
         const oldNodes = Dom.flattenDomIntoArray(oldNode);
         const changes = [];
 
         for (let i = 0; i < newNodes.length; i++) {
             if (newNodes[i] !== oldNodes[i]) {
-                changes.push({
-                    oldNode: oldNodes[i],
-                    newNode: newNodes[i]
-                });
+                if (newNodes[i].tagName !== oldNodes[i].tagName) {
+                    changes.push({
+                        oldNode: null,
+                        newNode: newNodes[i]
+                    });
+                } else {
+                    changes.push({
+                        oldNode: oldNodes[i],
+                        newNode: newNodes[i]
+                    });
+                }
             }
         }
 

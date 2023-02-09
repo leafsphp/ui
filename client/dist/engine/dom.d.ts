@@ -1,6 +1,6 @@
 export default class Dom {
     static diff(newNode: string, oldNode: HTMLElement): void;
-    static getBodyWithoutScripts(html: string): HTMLElement;
+    static getBody(html: string, removeScripts?: boolean): HTMLElement;
     static flattenDomIntoArray(node: HTMLElement): HTMLCollection;
-    static compareNodesAndReturnChanges(newNode: HTMLElement, oldNode: HTMLElement): Record<string, Element>[];
+    static compareNodesAndReturnChanges(newNode: HTMLElement, oldNode: HTMLElement): Record<string, Element | null>[];
 }

@@ -455,73 +455,89 @@ var Connection = /*#__PURE__*/function () {
   return Connection;
 }();
 
-var rawDirectiveSplitRE = function rawDirectiveSplitRE() {
-  return /:|\./gim;
-};
-var DIRECTIVE_SHORTHANDS;
-(function (DIRECTIVE_SHORTHANDS) {
-  DIRECTIVE_SHORTHANDS["@"] = "on";
-  DIRECTIVE_SHORTHANDS[":"] = "bind";
-})(DIRECTIVE_SHORTHANDS || (DIRECTIVE_SHORTHANDS = {}));
-function arraysMatch(a, b) {
-  return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every(function (val, index) {
-    return val === b[index];
-  });
-}
-window.leafUI = window.leafUI || {};
-
 var Dom = /*#__PURE__*/function () {
   function Dom() {}
   Dom.diff = function diff(newNode, oldNode) {
-    var newDomBody = Dom.getBodyWithoutScripts(newNode);
-    var diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
-    var _loop = function _loop(i) {
-      if (diff[i] instanceof HTMLScriptElement || diff[i].oldNode.children.length !== 0) {
-        return "continue";
-      }
-      if (arraysMatch(Object.keys(diff[i].oldNode.attributes), Object.keys(diff[i].newNode.attributes)) && arraysMatch(Object.values(diff[i].oldNode.attributes), Object.values(diff[i].newNode.attributes)) && diff[i].oldNode.innerHTML === diff[i].newNode.innerHTML) {
-        return "continue";
-      }
-      var hasDirectivePrefix = Object.values(diff[i].oldNode.attributes).map(function (attr) {
-        return attr.name.startsWith('ui-');
-      }).includes(true);
-      var hasDirectiveShorthandPrefix = Object.keys(DIRECTIVE_SHORTHANDS).some(function (shorthand) {
-        return Object.values(diff[i].oldNode.attributes).map(function (attr) {
-          return attr.name.startsWith(shorthand);
-        }).includes(true);
-      });
-      if (hasDirectivePrefix || hasDirectiveShorthandPrefix) {
-        diff[i].oldNode.innerHTML = diff[i].newNode.innerHTML;
-        for (var j = 0; j < diff[i].newNode.attributes.length; j++) {
-          var attr = diff[i].newNode.attributes[j];
-          if (attr.name.startsWith('ui-') || Object.keys(DIRECTIVE_SHORTHANDS).some(function (shorthand) {
-            return Object.values(diff[i].oldNode.attributes).map(function (attr) {
-              return attr.name.startsWith(shorthand);
-            }).includes(true);
-          })) {
-            if (diff[i].oldNode.getAttribute(attr.name) !== attr.value) {
-              diff[i].oldNode.replaceWith(diff[i].newNode);
-              initComponent(diff[i].newNode);
-            }
-            continue;
-          }
-          diff[i].oldNode.setAttribute(attr.name, attr.value);
-        }
-        return "continue";
-      }
-      diff[i].oldNode.replaceWith(diff[i].newNode);
+    var newDomBody = Dom.getBody(newNode, true);
+    var newNodes = Array.prototype.slice.call(newDomBody.childNodes);
+    var oldNodes = Array.prototype.slice.call(oldNode.childNodes);
+    /**
+     * Get the type for a node
+     * @param  {Node}   node The node
+     * @return {String}      The type
+     */
+    var getNodeType = function getNodeType(node) {
+      if (node.nodeType === 3) return 'text';
+      if (node.nodeType === 8) return 'comment';
+      return node.tagName.toLowerCase();
     };
-    for (var i = 0; i < diff.length; i++) {
-      var _ret = _loop(i);
-      if (_ret === "continue") continue;
+    /**
+     * Get the content from a node
+     * @param  {Node}   node The node
+     * @return {String}      The type
+     */
+    var getNodeContent = function getNodeContent(node) {
+      if (node.childNodes && node.childNodes.length > 0) return null;
+      return node.textContent;
+    };
+    // const diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
+    // If extra elements in DOM, remove them
+    var count = oldNodes.length - newNodes.length;
+    if (count > 0) {
+      for (; count > 0; count--) {
+        oldNodes[oldNodes.length - count].parentNode.removeChild(oldNodes[oldNodes.length - count]);
+      }
     }
+    // Diff each item in the newNodes
+    newNodes.forEach(function (node, index) {
+      // If element doesn't exist, create it
+      if (!oldNodes[index]) {
+        var newNodeClone = node.cloneNode(true);
+        oldNode.appendChild(newNodeClone);
+        initComponent(newNodeClone);
+        return;
+      }
+      // If element is not the same type, replace it with new element
+      if (getNodeType(node) !== getNodeType(oldNodes[index])) {
+        var _newNodeClone = node.cloneNode(true);
+        oldNodes[index].parentNode.replaceChild(_newNodeClone, oldNodes[index]);
+        initComponent(_newNodeClone);
+        return;
+      }
+      // If content is different, update it
+      var templateContent = getNodeContent(node);
+      if (templateContent && templateContent !== getNodeContent(oldNodes[index])) {
+        oldNodes[index].textContent = templateContent;
+      }
+      if (oldNodes[index].childNodes.length > 0 && node.childNodes.length < 1) {
+        oldNodes[index].innerHTML = '';
+        return;
+      }
+      if (oldNodes[index].childNodes.length < 1 && node.childNodes.length > 0) {
+        var fragment = document.createDocumentFragment();
+        Dom.diff(node, fragment);
+        oldNodes[index].appendChild(fragment);
+        initComponent(node);
+        return;
+      }
+      if (node.childNodes.length > 0) {
+        Dom.diff(node, oldNodes[index]);
+        initComponent(node);
+      }
+    });
+    // console.log(futureNodes);
   };
-  Dom.getBodyWithoutScripts = function getBodyWithoutScripts(html) {
+  Dom.getBody = function getBody(html, removeScripts) {
+    if (removeScripts === void 0) {
+      removeScripts = false;
+    }
     var parser = new DOMParser();
     var dom = parser.parseFromString(html, 'text/html');
-    var scripts = dom.getElementsByTagName('script');
-    for (var i = 0; i < scripts.length; i++) {
-      scripts[i].remove();
+    if (removeScripts) {
+      var scripts = dom.body.getElementsByTagName('script');
+      for (var i = 0; i < scripts.length; i++) {
+        scripts[i].remove();
+      }
     }
     return dom.body;
   };
@@ -534,10 +550,17 @@ var Dom = /*#__PURE__*/function () {
     var changes = [];
     for (var i = 0; i < newNodes.length; i++) {
       if (newNodes[i] !== oldNodes[i]) {
-        changes.push({
-          oldNode: oldNodes[i],
-          newNode: newNodes[i]
-        });
+        if (newNodes[i].tagName !== oldNodes[i].tagName) {
+          changes.push({
+            oldNode: null,
+            newNode: newNodes[i]
+          });
+        } else {
+          changes.push({
+            oldNode: oldNodes[i],
+            newNode: newNodes[i]
+          });
+        }
       }
     }
     return changes;
@@ -569,6 +592,16 @@ var compute = function compute(expression, el, refs) {
     }
   };
 };
+
+var rawDirectiveSplitRE = function rawDirectiveSplitRE() {
+  return /:|\./gim;
+};
+var DIRECTIVE_SHORTHANDS;
+(function (DIRECTIVE_SHORTHANDS) {
+  DIRECTIVE_SHORTHANDS["@"] = "on";
+  DIRECTIVE_SHORTHANDS[":"] = "bind";
+})(DIRECTIVE_SHORTHANDS || (DIRECTIVE_SHORTHANDS = {}));
+window.leafUI = window.leafUI || {};
 
 var flattenElementChildren = function flattenElementChildren(rootElement, ignoreRootElement) {
   if (ignoreRootElement === void 0) {
