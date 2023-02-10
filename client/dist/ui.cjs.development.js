@@ -455,12 +455,27 @@ var Connection = /*#__PURE__*/function () {
   return Connection;
 }();
 
+var rawDirectiveSplitRE = function rawDirectiveSplitRE() {
+  return /:|\./gim;
+};
+var DIRECTIVE_SHORTHANDS;
+(function (DIRECTIVE_SHORTHANDS) {
+  DIRECTIVE_SHORTHANDS["@"] = "on";
+  DIRECTIVE_SHORTHANDS[":"] = "bind";
+})(DIRECTIVE_SHORTHANDS || (DIRECTIVE_SHORTHANDS = {}));
+function arraysMatch(a, b) {
+  return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every(function (val, index) {
+    return val === b[index];
+  });
+}
+window.leafUI = window.leafUI || {};
+
 var Dom = /*#__PURE__*/function () {
   function Dom() {}
   Dom.diff = function diff(newNode, oldNode) {
     var newDomBody = Dom.getBody(newNode, true);
-    var newNodes = Array.prototype.slice.call(newDomBody.childNodes);
-    var oldNodes = Array.prototype.slice.call(oldNode.childNodes);
+    var newNodes = Array.prototype.slice.call(newDomBody.children);
+    var oldNodes = Array.prototype.slice.call(oldNode.children);
     /**
      * Get the type for a node
      * @param  {Node}   node The node
@@ -477,7 +492,7 @@ var Dom = /*#__PURE__*/function () {
      * @return {String}      The type
      */
     var getNodeContent = function getNodeContent(node) {
-      if (node.childNodes && node.childNodes.length > 0) return null;
+      if (node.children && node.children.length > 0) return null;
       return node.textContent;
     };
     // const diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
@@ -489,43 +504,82 @@ var Dom = /*#__PURE__*/function () {
       }
     }
     // Diff each item in the newNodes
-    newNodes.forEach(function (node, index) {
-      // If element doesn't exist, create it
+    var _loop = function _loop(index) {
+      var _Object$keys, _oldNodes$index, _Object$values, _oldNodes$index2, _oldNodes$index3;
+      var node = newNodes[index];
       if (!oldNodes[index]) {
         var newNodeClone = node.cloneNode(true);
         oldNode.appendChild(newNodeClone);
         initComponent(newNodeClone);
-        return;
+        return {
+          v: void 0
+        };
+      }
+      if (arraysMatch((_Object$keys = Object.keys((_oldNodes$index = oldNodes[index]) == null ? void 0 : _oldNodes$index.attributes)) != null ? _Object$keys : [], Object.keys(node.attributes)) && arraysMatch((_Object$values = Object.values((_oldNodes$index2 = oldNodes[index]) == null ? void 0 : _oldNodes$index2.attributes)) != null ? _Object$values : [], Object.values(node.attributes)) && ((_oldNodes$index3 = oldNodes[index]) == null ? void 0 : _oldNodes$index3.innerHTML) === node.innerHTML) {
+        return "continue";
+      }
+      var hasDirectivePrefix = Object.values(oldNodes[index].attributes).map(function (attr) {
+        return attr.name.startsWith('ui-');
+      }).includes(true);
+      var hasDirectiveShorthandPrefix = Object.keys(DIRECTIVE_SHORTHANDS).some(function (shorthand) {
+        return Object.values(oldNodes[index].attributes).map(function (attr) {
+          return attr.name.startsWith(shorthand);
+        }).includes(true);
+      });
+      if (hasDirectivePrefix || hasDirectiveShorthandPrefix) {
+        oldNodes[index].innerHTML = node.innerHTML;
+        for (var j = 0; j < node.attributes.length; j++) {
+          var attr = node.attributes[j];
+          if (attr.name.startsWith('ui-') || Object.keys(DIRECTIVE_SHORTHANDS).some(function (shorthand) {
+            return Object.values(oldNodes[index].attributes).map(function (attr) {
+              return attr.name.startsWith(shorthand);
+            }).includes(true);
+          })) {
+            if (oldNodes[index].getAttribute(attr.name) !== attr.value) {
+              oldNodes[index].replaceWith(node);
+              initComponent(node);
+            }
+            continue;
+          }
+          oldNodes[index].setAttribute(attr.name, attr.value);
+        }
+        return "continue";
       }
       // If element is not the same type, replace it with new element
       if (getNodeType(node) !== getNodeType(oldNodes[index])) {
         var _newNodeClone = node.cloneNode(true);
         oldNodes[index].parentNode.replaceChild(_newNodeClone, oldNodes[index]);
         initComponent(_newNodeClone);
-        return;
+        return {
+          v: void 0
+        };
       }
       // If content is different, update it
       var templateContent = getNodeContent(node);
       if (templateContent && templateContent !== getNodeContent(oldNodes[index])) {
         oldNodes[index].textContent = templateContent;
       }
-      if (oldNodes[index].childNodes.length > 0 && node.childNodes.length < 1) {
+      if (oldNodes[index].children.length > 0 && node.children.length < 1) {
         oldNodes[index].innerHTML = '';
-        return;
+        return "continue";
       }
-      if (oldNodes[index].childNodes.length < 1 && node.childNodes.length > 0) {
+      if (oldNodes[index].children.length < 1 && node.children.length > 0) {
         var fragment = document.createDocumentFragment();
         Dom.diff(node, fragment);
         oldNodes[index].appendChild(fragment);
         initComponent(node);
-        return;
+        return "continue";
       }
-      if (node.childNodes.length > 0) {
+      if (node.children.length > 0) {
         Dom.diff(node, oldNodes[index]);
         initComponent(node);
       }
-    });
-    // console.log(futureNodes);
+    };
+    for (var index = 0; index < newNodes.length; index++) {
+      var _ret = _loop(index);
+      if (_ret === "continue") continue;
+      if (typeof _ret === "object") return _ret.v;
+    }
   };
   Dom.getBody = function getBody(html, removeScripts) {
     if (removeScripts === void 0) {
@@ -592,16 +646,6 @@ var compute = function compute(expression, el, refs) {
     }
   };
 };
-
-var rawDirectiveSplitRE = function rawDirectiveSplitRE() {
-  return /:|\./gim;
-};
-var DIRECTIVE_SHORTHANDS;
-(function (DIRECTIVE_SHORTHANDS) {
-  DIRECTIVE_SHORTHANDS["@"] = "on";
-  DIRECTIVE_SHORTHANDS[":"] = "bind";
-})(DIRECTIVE_SHORTHANDS || (DIRECTIVE_SHORTHANDS = {}));
-window.leafUI = window.leafUI || {};
 
 var flattenElementChildren = function flattenElementChildren(rootElement, ignoreRootElement) {
   if (ignoreRootElement === void 0) {
