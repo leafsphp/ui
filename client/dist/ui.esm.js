@@ -471,13 +471,15 @@ window.leafUI = window.leafUI || {};
 var Dom = /*#__PURE__*/function () {
   function Dom() {}
   Dom.diff = function diff(newNode, oldNode) {
-    var newDomBody = Dom.getBody(newNode, true);
-    var newNodes = Array.prototype.slice.call(newDomBody.children);
+    Dom.diffElements(Dom.getBody(newNode, false), oldNode);
+  };
+  Dom.diffElements = function diffElements(newNode, oldNode) {
+    var newNodes = Array.prototype.slice.call(newNode.children);
     var oldNodes = Array.prototype.slice.call(oldNode.children);
     /**
      * Get the type for a node
      * @param  {Node}   node The node
-     * @return {String}      The type
+     * @return {String} The type
      */
     var getNodeType = function getNodeType(node) {
       if (node.nodeType === 3) return 'text';
@@ -534,20 +536,23 @@ var Dom = /*#__PURE__*/function () {
             }).includes(true);
           })) {
             if (oldNodes[index].getAttribute(attr.name) !== attr.value) {
-              oldNodes[index].replaceWith(node);
-              initComponent(node);
+              var _newNodeClone = node.cloneNode(true);
+              oldNodes[index].parentNode.replaceChild(_newNodeClone, oldNodes[index]);
+              initComponent(_newNodeClone);
             }
             continue;
           }
-          oldNodes[index].setAttribute(attr.name, attr.value);
+          var _newNodeClone2 = node.cloneNode(true);
+          oldNodes[index].parentNode.replaceChild(_newNodeClone2, oldNodes[index]);
+          initComponent(_newNodeClone2);
         }
         return "continue";
       }
       // If element is not the same type, replace it with new element
       if (getNodeType(node) !== getNodeType(oldNodes[index])) {
-        var _newNodeClone = node.cloneNode(true);
-        oldNodes[index].parentNode.replaceChild(_newNodeClone, oldNodes[index]);
-        initComponent(_newNodeClone);
+        var _newNodeClone3 = node.cloneNode(true);
+        oldNodes[index].parentNode.replaceChild(_newNodeClone3, oldNodes[index]);
+        initComponent(_newNodeClone3);
         return {
           v: void 0
         };
@@ -565,12 +570,11 @@ var Dom = /*#__PURE__*/function () {
         var fragment = document.createDocumentFragment();
         Dom.diff(node, fragment);
         oldNodes[index].appendChild(fragment);
-        initComponent(node);
         return "continue";
       }
       if (node.children.length > 0) {
-        Dom.diff(node, oldNodes[index]);
-        initComponent(node);
+        console.log('diffing children', newNode, oldNode);
+        Dom.diffElements(node, oldNodes[index]);
       }
     };
     for (var index = 0; index < newNodes.length; index++) {
@@ -585,7 +589,7 @@ var Dom = /*#__PURE__*/function () {
     }
     var parser = new DOMParser();
     var dom = parser.parseFromString(html, 'text/html');
-    if (removeScripts) {
+    if (removeScripts === true) {
       var scripts = dom.body.getElementsByTagName('script');
       for (var i = 0; i < scripts.length; i++) {
         scripts[i].remove();
@@ -905,6 +909,10 @@ var Component = /*#__PURE__*/function () {
     this.uiNodes = compile(rootEl);
     this.render();
     rootEl['component'] = this;
+    window.leafUI = {
+      rootEl: rootEl,
+      component: this
+    };
     return this;
   }
   /**

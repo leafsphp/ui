@@ -11,7 +11,10 @@ export declare enum DIRECTIVE_SHORTHANDS {
 export declare function arraysMatch(a: any[], b: any[]): boolean;
 declare global {
     interface Window {
-        leafUI: Component;
+        leafUI: {
+            rootEl?: HTMLElement;
+            component: Component;
+        };
         _leafUIConfig: LeafUIConfig;
     }
     interface HTMLElement {

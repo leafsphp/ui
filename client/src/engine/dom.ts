@@ -3,14 +3,17 @@ import { DIRECTIVE_SHORTHANDS, arraysMatch } from './../utils/data';
 
 export default class Dom {
     static diff(newNode: string, oldNode: HTMLElement): void {
-        const newDomBody = Dom.getBody(newNode, true);
-        const newNodes = Array.prototype.slice.call(newDomBody.children);
+        Dom.diffElements(Dom.getBody(newNode, false), oldNode);
+    }
+
+    static diffElements(newNode: HTMLElement, oldNode: HTMLElement): void {
+        const newNodes = Array.prototype.slice.call(newNode.children);
         const oldNodes = Array.prototype.slice.call(oldNode.children);
 
         /**
          * Get the type for a node
          * @param  {Node}   node The node
-         * @return {String}      The type
+         * @return {String} The type
          */
         const getNodeType = (node: HTMLElement) => {
             if (node.nodeType === 3) return 'text';
@@ -31,7 +34,7 @@ export default class Dom {
         // const diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
 
         // If extra elements in DOM, remove them
-        var count = oldNodes.length - newNodes.length;
+        let count = oldNodes.length - newNodes.length;
         if (count > 0) {
             for (; count > 0; count--) {
                 oldNodes[oldNodes.length - count].parentNode.removeChild(
@@ -78,13 +81,17 @@ export default class Dom {
 
             if (hasDirectivePrefix || hasDirectiveShorthandPrefix) {
                 oldNodes[index].innerHTML = node.innerHTML;
+
                 for (let j = 0; j < node.attributes.length; j++) {
                     const attr = node.attributes[j];
+
                     if (
                         attr.name.startsWith('ui-') ||
                         Object.keys(DIRECTIVE_SHORTHANDS).some(shorthand =>
                             Object.values(oldNodes[index].attributes)
-                                .map((attr: any) => attr.name.startsWith(shorthand))
+                                .map((attr: any) =>
+                                    attr.name.startsWith(shorthand)
+                                )
                                 .includes(true)
                         )
                     ) {
@@ -92,16 +99,26 @@ export default class Dom {
                             oldNodes[index].getAttribute(attr.name) !==
                             attr.value
                         ) {
-                            oldNodes[index].replaceWith(node);
-                            initComponent(node);
+                            const newNodeClone = node.cloneNode(true);
+                            oldNodes[index].parentNode.replaceChild(
+                                newNodeClone,
+                                oldNodes[index]
+                            );
+                            initComponent(newNodeClone);
                         }
+
                         continue;
                     }
-                    oldNodes[index].setAttribute(attr.name, attr.value);
+
+                    const newNodeClone = node.cloneNode(true);
+                    oldNodes[index].parentNode.replaceChild(
+                        newNodeClone,
+                        oldNodes[index]
+                    );
+                    initComponent(newNodeClone);
                 }
                 continue;
             }
-
 
             // If element is not the same type, replace it with new element
             if (getNodeType(node) !== getNodeType(oldNodes[index])) {
@@ -138,13 +155,12 @@ export default class Dom {
                 const fragment = document.createDocumentFragment();
                 Dom.diff(node, fragment as any);
                 oldNodes[index].appendChild(fragment);
-                initComponent(node);
                 continue;
             }
 
             if (node.children.length > 0) {
-                Dom.diff(node, oldNodes[index]);
-                initComponent(node);
+                console.log('diffing children', newNode, oldNode);
+                Dom.diffElements(node, oldNodes[index]);
             }
         }
     }
@@ -153,7 +169,7 @@ export default class Dom {
         const parser = new DOMParser();
         const dom = parser.parseFromString(html, 'text/html');
 
-        if (removeScripts) {
+        if (removeScripts === true) {
             const scripts = dom.body.getElementsByTagName('script');
 
             for (let i = 0; i < scripts.length; i++) {

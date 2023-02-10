@@ -20,6 +20,11 @@ export default class Component {
         this.render();
         rootEl['component'] = this;
 
+        window.leafUI = {
+            rootEl,
+            component: this
+        };
+
         return this;
     }
 

@@ -33,7 +33,10 @@ export function arraysMatch(a: any[], b: any[]) {
 
 declare global {
     interface Window {
-        leafUI: Component;
+        leafUI: {
+            rootEl?: HTMLElement;
+            component: Component;
+        };
         _leafUIConfig: LeafUIConfig;
     }
 
