@@ -29,9 +29,28 @@ class Core
     /**
      * Render a Leaf UI
      * 
-     * @param Component|callable $component The Leaf UI component to render
+     * @param Component $component The Leaf UI component to render
      */
     public static function render($component)
+    {
+        $componentData = static::buildComponent($component);
+
+        if ($componentData['responseType'] === 'json') {
+            unset($componentData['responseType']);
+            (new \Leaf\Http\Response)->json($componentData);
+        } else {
+            (new \Leaf\Http\Response)->markup($componentData['html']);
+        }
+    }
+
+    /**
+     * Process a Leaf UI component and return the HTML
+     * 
+     * @param Component $name The name of the component
+     * @param bool $withoutScripts Whether to return the HTML without scripts
+     * @param callable $callback The callback to run when the component is rendered
+     */
+    protected static function buildComponent(Component $component, bool $withoutScripts = false)
     {
         $data = json_decode((new \Leaf\Http\Request())->get('_leaf_ui_config', false) ?? '', true);
 
@@ -53,14 +72,16 @@ class Core
                 $state[$key] = $component->{$key};
             }
 
-            return (new \Leaf\Http\Response)->json([
-                'html' => str_replace('</body>',  Core::init() . '</body>', static::compileTemplate($component->render(), $state)),
+            return [
+                'responseType' => 'json',
+                'html' => $withoutScripts ? static::compileTemplate($component->render(), $state) : str_replace('</body>',  Core::init() . '</body>', static::compileTemplate($component->render(), $state)),
                 'state' => $state,
-            ]);
+            ];
         }
 
-        (new \Leaf\Http\Response)
-            ->markup(str_replace('</body>', Core::createElement('script', [], ['
+        return [
+            'responseType' => 'html',
+            'html' => $withoutScripts ? static::compileTemplate($component->render(), get_class_vars($component::class)) : str_replace('</body>', Core::createElement('script', [], ['
                 window._leafUIConfig = {
                     el: document.querySelector("body"),
                     component: "' . $component::class . '",
@@ -69,7 +90,9 @@ class Core
                     path: "' . $_SERVER['REQUEST_URI'] . '",
                     requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
                 };
-            ']) . Core::init() . '</body>', static::compileTemplate($component->render(), get_class_vars($component::class))));
+            ']) . Core::init() . '</body>', static::compileTemplate($component->render(), get_class_vars($component::class))),
+            'state' => json_encode(array_merge(static::$state, get_class_vars($component::class))),
+        ];
     }
 
     /**
@@ -173,7 +196,7 @@ class Core
         }, $compiled);
 
         $compiled = preg_replace_callback('/@component\((.*?)\)/', function ($matches) {
-            return Core::component($matches[1])['html'];
+            return Core::component($matches[1]);
         }, $compiled);
 
         return $compiled;
@@ -183,9 +206,9 @@ class Core
      * Embed a component into a view
      * 
      * @param string $component The component to embed
-     * @return array
+     * @return string
      */
-    public static function component(string $component)
+    public static function component(string $component, $state = []): string
     {
         $component = trim($component, '"\'\`');
 
@@ -193,10 +216,25 @@ class Core
             trigger_error($component . ' does not exist', E_USER_ERROR);
         }
 
-        return [
-            'html' => 'This is a component',
-            'state' => [],
-        ];
+        $componentPayload = json_encode([
+            'type' => 'component',
+            'payload' => [
+                'params' => [],
+                'method' => null,
+                'methodArgs' => [],
+                'component' => $component,
+                'data' => $state ?? static::$state ?? [],
+            ],
+        ]);
+
+        $originalURI = $_SERVER['REQUEST_URI'];
+        $_SERVER['REQUEST_URI'] = "$originalURI?_leaf_ui_config=$componentPayload";
+
+        $componentData = static::buildComponent(new $component, true);
+
+        $_SERVER['REQUEST_URI'] = $originalURI;
+
+        return $componentData['html'];
     }
 
     /**
