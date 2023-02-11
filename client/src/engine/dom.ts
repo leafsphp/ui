@@ -10,8 +10,6 @@ export default class Dom {
         const newNodes = Array.prototype.slice.call(newNode.children);
         const oldNodes = Array.prototype.slice.call(oldNode.children);
 
-        console.log('diffing elements', newNodes, oldNodes);
-
         /**
          * Get the type for a node
          * @param  {Node}   node The node
@@ -46,12 +44,9 @@ export default class Dom {
         for (let index = 0; index < newNodes.length; index++) {
             const node = newNodes[index];
 
-            console.log('diffing node', newNodes[index], oldNodes[index], index);
-
             if (!oldNodes[index]) {
                 const newNodeClone = node.cloneNode(true);
                 oldNode.appendChild(newNodeClone);
-                console.log('adding new UI node', newNodeClone);
                 initComponent(newNodeClone);
                 continue;
             }
@@ -132,7 +127,6 @@ export default class Dom {
                         newNodeClone,
                         oldNodes[index]
                     );
-                    console.log('replacing leaf UI node', newNodeClone, oldNodes[index]);
                     initComponent(newNodeClone);
                 }
                 continue;
@@ -145,7 +139,6 @@ export default class Dom {
                     newNodeClone,
                     oldNodes[index]
                 );
-                console.log('replacing node', newNodeClone, oldNodes[index]);
                 initComponent(newNodeClone);
                 continue;
             }
@@ -156,7 +149,6 @@ export default class Dom {
                 templateContent &&
                 templateContent !== getNodeContent(oldNodes[index])
             ) {
-                console.log('updating textContent', templateContent, oldNodes[index]);
                 oldNodes[index].textContent = templateContent;
             }
 
@@ -164,7 +156,6 @@ export default class Dom {
                 oldNodes[index].children.length > 0 &&
                 node.children.length < 1
             ) {
-                console.log('clearing innerHTMl', node, oldNodes[index]);
                 oldNodes[index].innerHTML = '';
                 continue;
             }
@@ -174,14 +165,12 @@ export default class Dom {
                 node.children.length > 0
             ) {
                 const fragment = document.createDocumentFragment();
-                console.log('fragmenting', node, fragment);
                 Dom.diff(node, fragment as any);
                 oldNodes[index].appendChild(fragment);
                 continue;
             }
 
             if (node.children.length > 0) {
-                console.log('diffing children', node, oldNodes[index]);
                 Dom.diffElements(node, oldNodes[index]);
             }
         }

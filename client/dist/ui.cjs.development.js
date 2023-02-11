@@ -478,7 +478,6 @@ var Dom = /*#__PURE__*/function () {
   Dom.diffElements = function diffElements(newNode, oldNode) {
     var newNodes = Array.prototype.slice.call(newNode.children);
     var oldNodes = Array.prototype.slice.call(oldNode.children);
-    console.log('diffing elements', newNodes, oldNodes);
     /**
      * Get the type for a node
      * @param  {Node}   node The node
@@ -508,11 +507,9 @@ var Dom = /*#__PURE__*/function () {
     var _loop = function _loop(index) {
       var _Object$keys, _oldNodes$index, _Object$values, _oldNodes$index2, _oldNodes$index3;
       var node = newNodes[index];
-      console.log('diffing node', newNodes[index], oldNodes[index], index);
       if (!oldNodes[index]) {
         var newNodeClone = node.cloneNode(true);
         oldNode.appendChild(newNodeClone);
-        console.log('adding new UI node', newNodeClone);
         initComponent(newNodeClone);
         return "continue";
       }
@@ -552,7 +549,6 @@ var Dom = /*#__PURE__*/function () {
           }
           var _newNodeClone3 = node.cloneNode(true);
           oldNodes[index].parentNode.replaceChild(_newNodeClone3, oldNodes[index]);
-          console.log('replacing leaf UI node', _newNodeClone3, oldNodes[index]);
           initComponent(_newNodeClone3);
         }
         return "continue";
@@ -561,30 +557,25 @@ var Dom = /*#__PURE__*/function () {
       if (getNodeType(node) !== getNodeType(oldNodes[index])) {
         var _newNodeClone4 = node.cloneNode(true);
         oldNodes[index].parentNode.replaceChild(_newNodeClone4, oldNodes[index]);
-        console.log('replacing node', _newNodeClone4, oldNodes[index]);
         initComponent(_newNodeClone4);
         return "continue";
       }
       // If content is different, update it
       var templateContent = getNodeContent(node);
       if (templateContent && templateContent !== getNodeContent(oldNodes[index])) {
-        console.log('updating textContent', templateContent, oldNodes[index]);
         oldNodes[index].textContent = templateContent;
       }
       if (oldNodes[index].children.length > 0 && node.children.length < 1) {
-        console.log('clearing innerHTMl', node, oldNodes[index]);
         oldNodes[index].innerHTML = '';
         return "continue";
       }
       if (oldNodes[index].children.length < 1 && node.children.length > 0) {
         var fragment = document.createDocumentFragment();
-        console.log('fragmenting', node, fragment);
         Dom.diff(node, fragment);
         oldNodes[index].appendChild(fragment);
         return "continue";
       }
       if (node.children.length > 0) {
-        console.log('diffing children', node, oldNodes[index]);
         Dom.diffElements(node, oldNodes[index]);
       }
     };
