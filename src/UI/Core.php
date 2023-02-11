@@ -11,8 +11,11 @@ use MatthiasMullie\Minify\CSS;
  */
 class Core
 {
-    /**Scripts to embed into view */
-    public static $scripts = [];
+    /** Scripts to embed into view */
+    protected static $scripts = [];
+
+    /** State to embed into view */
+    protected static $state = [];
 
     /**
      * Initialize Leaf UI on a page
@@ -44,7 +47,7 @@ class Core
                 ...$data['payload']['methodArgs']
             );
 
-            $state = [];
+            $state = static::$state;
 
             foreach ($data['payload']['data'] as $key => $value) {
                 $state[$key] = $component->{$key};
@@ -61,7 +64,7 @@ class Core
                 window._leafUIConfig = {
                     el: document.querySelector("body"),
                     component: "' . $component::class . '",
-                    data: ' . json_encode(get_class_vars($component::class)) . ',
+                    data: ' . json_encode(array_merge(static::$state, get_class_vars($component::class))) . ',
                     methods: ' . json_encode(get_class_methods($component::class)) . ',
                     path: "' . $_SERVER['REQUEST_URI'] . '",
                     requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
@@ -170,7 +173,7 @@ class Core
         }, $compiled);
 
         $compiled = preg_replace_callback('/@component\((.*?)\)/', function ($matches) {
-            return "<?php echo Core::component($matches[1]); ?>";
+            return Core::component($matches[1])['html'];
         }, $compiled);
 
         return $compiled;
@@ -179,9 +182,22 @@ class Core
     /**
      * Embed a component into a view
      * 
-     * @param string $view The component to embed
-     * @return string
+     * @param string $component The component to embed
+     * @return array
      */
+    public static function component(string $component)
+    {
+        $component = trim($component, '"\'\`');
+
+        if (!class_exists($component)) {
+            trigger_error($component . ' does not exist', E_USER_ERROR);
+        }
+
+        return [
+            'html' => 'This is a component',
+            'state' => [],
+        ];
+    }
 
     /**
      * Create an HTML element
