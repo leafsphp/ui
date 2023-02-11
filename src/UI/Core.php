@@ -17,6 +17,12 @@ class Core
     /** State to embed into view */
     protected static $state = [];
 
+    /** List of components in a view */
+    protected static $components = [];
+
+    /** List of component methods */
+    protected static $componentMethods = [];
+
     /**
      * Initialize Leaf UI on a page
      * @return string
@@ -33,7 +39,14 @@ class Core
      */
     public static function render($component)
     {
-        $componentData = static::buildComponent($component);
+        $config = json_decode((new \Leaf\Http\Request())->get('_leaf_ui_config', false) ?? '', true) ?? [];
+
+        $component->key = static::randomId($component::class);
+        static::$state[$component->key] = get_class_vars($component::class);
+        static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
+        static::$components = array_merge(static::$components, [$component->key => $component::class]);
+
+        $componentData = static::buildComponent($component, $config);
 
         if ($componentData['responseType'] === 'json') {
             unset($componentData['responseType']);
@@ -47,51 +60,66 @@ class Core
      * Process a Leaf UI component and return the HTML
      * 
      * @param Component $name The name of the component
+     * @param array $config Configuration for the component
      * @param bool $withoutScripts Whether to return the HTML without scripts
      * @param callable $callback The callback to run when the component is rendered
      */
-    protected static function buildComponent(Component $component, bool $withoutScripts = false)
+    protected static function buildComponent(Component $component, array $config, bool $withoutScripts = false)
     {
-        $data = json_decode((new \Leaf\Http\Request())->get('_leaf_ui_config', false) ?? '', true);
-
-        if (is_string($data['type'] ?? null)) {
-            foreach ($data['payload']['data'] as $key => $value) {
+        if (is_string($config['type'] ?? null)) {
+            foreach ($config['payload']['data'] as $key => $value) {
                 $component->{$key} = $value;
             }
 
-            $data['payload']['methodArgs'] = explode(',', $data['payload']['methodArgs']);
+            if ($config['type'] === 'callMethod') {
+                $config['payload']['methodArgs'] = explode(',', $config['payload']['methodArgs']);
 
-            call_user_func(
-                [$component, $data['payload']['method']],
-                ...$data['payload']['methodArgs']
-            );
+                call_user_func(
+                    [$component, $config['payload']['method']],
+                    ...$config['payload']['methodArgs']
+                );
+            }
 
-            $state = static::$state;
-
-            foreach ($data['payload']['data'] as $key => $value) {
-                $state[$key] = $component->{$key};
+            foreach ($config['payload']['data'] as $key => $value) {
+                static::$state[$component->key][$key] = $component->{$key};
             }
 
             return [
                 'responseType' => 'json',
-                'html' => $withoutScripts ? static::compileTemplate($component->render(), $state) : str_replace('</body>',  Core::init() . '</body>', static::compileTemplate($component->render(), $state)),
-                'state' => $state,
+                'html' => $withoutScripts ?
+                    static::compileTemplate($component->render(), static::$state[$component->key]) :
+                    str_replace(
+                        '</body>',
+                        Core::createElement('script', [], ['
+                            window._leafUIConfig.methods = ' . json_encode(array_unique(static::$componentMethods)) . ';
+                            window._leafUIConfig.components = ' . json_encode(static::$components) . ';
+                        ']) .
+                         Core::init() . '</body>',
+                        static::compileTemplate($component->render(), static::$state[$component->key])
+                    ),
+                'state' => static::$state[$component->key],
             ];
         }
 
+        static::$state[$component->key] = array_merge(static::$state[$component->key], get_class_vars($component::class));
+        $parsedComponent = static::compileTemplate($component->render(), static::$state[$component->key]);
+
         return [
             'responseType' => 'html',
-            'html' => $withoutScripts ? static::compileTemplate($component->render(), get_class_vars($component::class)) : str_replace('</body>', Core::createElement('script', [], ['
-                window._leafUIConfig = {
-                    el: document.querySelector("body"),
-                    component: "' . $component::class . '",
-                    data: ' . json_encode(array_merge(static::$state, get_class_vars($component::class))) . ',
-                    methods: ' . json_encode(get_class_methods($component::class)) . ',
-                    path: "' . $_SERVER['REQUEST_URI'] . '",
-                    requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
-                };
-            ']) . Core::init() . '</body>', static::compileTemplate($component->render(), get_class_vars($component::class))),
-            'state' => json_encode(array_merge(static::$state, get_class_vars($component::class))),
+            'html' => $withoutScripts ?
+                $parsedComponent :
+                str_replace('</body>', Core::createElement('script', [], ['
+                    window._leafUIConfig = {
+                        el: document.querySelector("body"),
+                        component: "' . $component::class . '",
+                        components: ' . json_encode(static::$components) . ',
+                        data: ' . json_encode(static::$state[$component->key]) . ',
+                        methods: ' . json_encode(array_unique(static::$componentMethods)) . ',
+                        path: "' . $_SERVER['REQUEST_URI'] . '",
+                        requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
+                    };
+                ']) . Core::init() . '</body>', $parsedComponent),
+            'state' => json_encode(static::$state[$component->key]),
         ];
     }
 
@@ -216,23 +244,24 @@ class Core
             trigger_error($component . ' does not exist', E_USER_ERROR);
         }
 
-        $componentPayload = json_encode([
+        $component = new $component;
+        $component->key = static::randomId($component::class);
+        static::$state[$component->key] = get_class_vars($component::class);
+        static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
+        static::$components = array_merge(static::$components, [$component->key => $component::class]);
+
+        $config = [
             'type' => 'component',
             'payload' => [
                 'params' => [],
                 'method' => null,
                 'methodArgs' => [],
                 'component' => $component,
-                'data' => $state ?? static::$state ?? [],
+                'data' => static::$state[$component->key],
             ],
-        ]);
+        ];
 
-        $originalURI = $_SERVER['REQUEST_URI'];
-        $_SERVER['REQUEST_URI'] = "$originalURI?_leaf_ui_config=$componentPayload";
-
-        $componentData = static::buildComponent(new $component, true);
-
-        $_SERVER['REQUEST_URI'] = $originalURI;
+        $componentData = static::buildComponent(new $component, $config, true);
 
         return $componentData['html'];
     }
