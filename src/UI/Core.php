@@ -48,7 +48,7 @@ class Core
             }
 
             return (new \Leaf\Http\Response)->json([
-                'html' => static::compileTemplate($component->render(), $state),
+                'html' => str_replace('</body>',  Core::init() . '</body>', static::compileTemplate($component->render(), $state)),
                 'state' => $state,
             ]);
         }
@@ -86,7 +86,7 @@ class Core
      */
     public static function compileTemplate(string $rawText, array $state = []): string
     {
-        $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) use($state) {
+        $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) use ($state) {
             return $state[ltrim(trim($matches[1]), '$')] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
         }, $rawText);
 
@@ -176,7 +176,7 @@ class Core
             return eval($matches[1]);
         }, $compiled);
 
-        $compiled = preg_replace_callback('/@include\((.*?)\)/', function ($matches) use($state) {
+        $compiled = preg_replace_callback('/@include\((.*?)\)/', function ($matches) use ($state) {
             $viewToInclude = trim($matches[1], '"\'\`');
 
             $compiledWithVars = preg_replace_callback('/\$([a-zA-Z0-9_]+)/', function ($matches) use ($state) {
