@@ -11,13 +11,16 @@ use MatthiasMullie\Minify\CSS;
  */
 class Core
 {
+    /**Scripts to embed into view */
+    public static $scripts = [];
+
     /**
      * Initialize Leaf UI on a page
      * @return string
      */
     public static function init(): string
     {
-        return static::createElement('script', ['src' => '/vendor/leafs/ui/client/dist/ui.cjs.production.min.js'], ['']);
+        return implode(static::$scripts) . static::createElement('script', ['src' => '/vendor/leafs/ui/client/dist/ui.cjs.production.min.js'], ['']);
     }
 
     /**
@@ -128,31 +131,15 @@ class Core
             return $renderedData;
         }, $compiled);
 
-        $compiled = preg_replace_callback('/@for\((.*?)\)/', function ($matches) {
+        $compiled = preg_replace_callback('/@for\([\s\S]*?\)\s*[\s\S]*?(\s*@endfor\s*)/', function ($matches) {
             return "<?php for ($matches[1]): ?>";
         }, $compiled);
 
-        $compiled = preg_replace_callback('/@endfor/', function ($matches) {
-            return "<?php endfor; ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@foreach\((.*?)\)/', function ($matches) {
+        $compiled = preg_replace_callback('/@foreach\([\s\S]*?\)\s*[\s\S]*?(\s*@endforeach\s*)/', function ($matches) {
             return "<?php foreach ($matches[1]): ?>";
         }, $compiled);
 
-        $compiled = preg_replace_callback('/@endforeach/', function ($matches) {
-            return "<?php endforeach; ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@while\((.*?)\)/', function ($matches) {
-            return "<?php while ($matches[1]): ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@endwhile/', function ($matches) {
-            return "<?php endwhile; ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@switch\((.*?)\)/', function ($matches) {
+        $compiled = preg_replace_callback('/@switch\([\s\S]*?\)\s*[\s\S]*?(\s*@endswitch\s*)/', function ($matches) {
             return "<?php switch ($matches[1]): ?>";
         }, $compiled);
 
@@ -162,10 +149,6 @@ class Core
 
         $compiled = preg_replace_callback('/@break/', function ($matches) {
             return "<?php break; ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@endswitch/', function ($matches) {
-            return "<?php endswitch; ?>";
         }, $compiled);
 
         $compiled = preg_replace_callback('/@continue/', function ($matches) {
@@ -192,6 +175,13 @@ class Core
 
         return $compiled;
     }
+
+    /**
+     * Embed a component into a view
+     * 
+     * @param string $view The component to embed
+     * @return string
+     */
 
     /**
      * Create an HTML element
