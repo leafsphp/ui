@@ -476,6 +476,7 @@ var Dom = /*#__PURE__*/function () {
   Dom.diffElements = function diffElements(newNode, oldNode) {
     var newNodes = Array.prototype.slice.call(newNode.children);
     var oldNodes = Array.prototype.slice.call(oldNode.children);
+    console.log('diffing elements', newNodes, oldNodes);
     /**
      * Get the type for a node
      * @param  {Node}   node The node
@@ -505,26 +506,22 @@ var Dom = /*#__PURE__*/function () {
     var _loop = function _loop(index) {
       var _Object$keys, _oldNodes$index, _Object$values, _oldNodes$index2, _oldNodes$index3;
       var node = newNodes[index];
-      console.log('diffing node', node);
+      console.log('diffing node', newNodes[index], oldNodes[index], index);
       if (!oldNodes[index]) {
         var newNodeClone = node.cloneNode(true);
         oldNode.appendChild(newNodeClone);
         console.log('adding new UI node', newNodeClone);
         initComponent(newNodeClone);
-        return {
-          v: void 0
-        };
+        return "continue";
       }
       if (node instanceof HTMLScriptElement && oldNodes[index] instanceof HTMLScriptElement) {
         if (node.src !== oldNodes[index].src || node.innerHTML !== oldNodes[index].innerHTML) {
           var _newNodeClone = node.cloneNode(true);
           oldNodes[index].parentNode.replaceChild(_newNodeClone, oldNodes[index]);
-          console.log('replacing script UI node', _newNodeClone, oldNodes[index]);
         }
         return "continue";
       }
       if (arraysMatch((_Object$keys = Object.keys((_oldNodes$index = oldNodes[index]) == null ? void 0 : _oldNodes$index.attributes)) != null ? _Object$keys : [], Object.keys(node.attributes)) && arraysMatch((_Object$values = Object.values((_oldNodes$index2 = oldNodes[index]) == null ? void 0 : _oldNodes$index2.attributes)) != null ? _Object$values : [], Object.values(node.attributes)) && ((_oldNodes$index3 = oldNodes[index]) == null ? void 0 : _oldNodes$index3.innerHTML) === node.innerHTML) {
-        console.log('no changes to UI node', oldNodes[index]);
         return "continue";
       }
       var hasDirectivePrefix = Object.values(oldNodes[index].attributes).map(function (attr) {
@@ -547,7 +544,6 @@ var Dom = /*#__PURE__*/function () {
             if (oldNodes[index].getAttribute(attr.name) !== attr.value) {
               var _newNodeClone2 = node.cloneNode(true);
               oldNodes[index].parentNode.replaceChild(_newNodeClone2, oldNodes[index]);
-              console.log('replacing directive UI node', _newNodeClone2, oldNodes[index]);
               initComponent(_newNodeClone2);
             }
             continue;
@@ -565,9 +561,7 @@ var Dom = /*#__PURE__*/function () {
         oldNodes[index].parentNode.replaceChild(_newNodeClone4, oldNodes[index]);
         console.log('replacing node', _newNodeClone4, oldNodes[index]);
         initComponent(_newNodeClone4);
-        return {
-          v: void 0
-        };
+        return "continue";
       }
       // If content is different, update it
       var templateContent = getNodeContent(node);
@@ -595,7 +589,6 @@ var Dom = /*#__PURE__*/function () {
     for (var index = 0; index < newNodes.length; index++) {
       var _ret = _loop(index);
       if (_ret === "continue") continue;
-      if (typeof _ret === "object") return _ret.v;
     }
   };
   Dom.getBody = function getBody(html, removeScripts) {

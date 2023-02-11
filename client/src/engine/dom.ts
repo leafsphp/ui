@@ -10,6 +10,8 @@ export default class Dom {
         const newNodes = Array.prototype.slice.call(newNode.children);
         const oldNodes = Array.prototype.slice.call(oldNode.children);
 
+        console.log('diffing elements', newNodes, oldNodes);
+
         /**
          * Get the type for a node
          * @param  {Node}   node The node
@@ -44,14 +46,14 @@ export default class Dom {
         for (let index = 0; index < newNodes.length; index++) {
             const node = newNodes[index];
 
-            console.log('diffing node', node);
+            console.log('diffing node', newNodes[index], oldNodes[index], index);
 
             if (!oldNodes[index]) {
                 const newNodeClone = node.cloneNode(true);
                 oldNode.appendChild(newNodeClone);
                 console.log('adding new UI node', newNodeClone);
                 initComponent(newNodeClone);
-                return;
+                continue;
             }
 
             if (node instanceof HTMLScriptElement && oldNodes[index] instanceof HTMLScriptElement) {
@@ -61,11 +63,6 @@ export default class Dom {
                 ) {
                     const newNodeClone = node.cloneNode(true);
                     oldNodes[index].parentNode.replaceChild(
-                        newNodeClone,
-                        oldNodes[index]
-                    );
-                    console.log(
-                        'replacing script UI node',
                         newNodeClone,
                         oldNodes[index]
                     );
@@ -85,7 +82,6 @@ export default class Dom {
                 ) &&
                 oldNodes[index]?.innerHTML === node.innerHTML
             ) {
-                console.log('no changes to UI node', oldNodes[index]);
                 continue;
             }
 
@@ -125,7 +121,6 @@ export default class Dom {
                                 newNodeClone,
                                 oldNodes[index]
                             );
-                            console.log('replacing directive UI node', newNodeClone, oldNodes[index]);
                             initComponent(newNodeClone);
                         }
 
@@ -152,7 +147,7 @@ export default class Dom {
                 );
                 console.log('replacing node', newNodeClone, oldNodes[index]);
                 initComponent(newNodeClone);
-                return;
+                continue;
             }
 
             // If content is different, update it
