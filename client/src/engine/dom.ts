@@ -31,8 +31,6 @@ export default class Dom {
             return node.textContent;
         };
 
-        // const diff = Dom.compareNodesAndReturnChanges(newDomBody, oldNode);
-
         // If extra elements in DOM, remove them
         let count = oldNodes.length - newNodes.length;
         if (count > 0) {
@@ -43,15 +41,37 @@ export default class Dom {
             }
         }
 
-        // Diff each item in the newNodes
         for (let index = 0; index < newNodes.length; index++) {
             const node = newNodes[index];
+
+            console.log('diffing node', node);
 
             if (!oldNodes[index]) {
                 const newNodeClone = node.cloneNode(true);
                 oldNode.appendChild(newNodeClone);
+                console.log('adding new UI node', newNodeClone);
                 initComponent(newNodeClone);
                 return;
+            }
+
+            if (node instanceof HTMLScriptElement && oldNodes[index] instanceof HTMLScriptElement) {
+                if (
+                    node.src !== oldNodes[index].src ||
+                    node.innerHTML !== oldNodes[index].innerHTML
+                ) {
+                    const newNodeClone = node.cloneNode(true);
+                    oldNodes[index].parentNode.replaceChild(
+                        newNodeClone,
+                        oldNodes[index]
+                    );
+                    console.log(
+                        'replacing script UI node',
+                        newNodeClone,
+                        oldNodes[index]
+                    );
+                }
+
+                continue;
             }
 
             if (
@@ -65,6 +85,7 @@ export default class Dom {
                 ) &&
                 oldNodes[index]?.innerHTML === node.innerHTML
             ) {
+                console.log('no changes to UI node', oldNodes[index]);
                 continue;
             }
 
@@ -104,6 +125,7 @@ export default class Dom {
                                 newNodeClone,
                                 oldNodes[index]
                             );
+                            console.log('replacing directive UI node', newNodeClone, oldNodes[index]);
                             initComponent(newNodeClone);
                         }
 
@@ -115,6 +137,7 @@ export default class Dom {
                         newNodeClone,
                         oldNodes[index]
                     );
+                    console.log('replacing leaf UI node', newNodeClone, oldNodes[index]);
                     initComponent(newNodeClone);
                 }
                 continue;
@@ -127,6 +150,7 @@ export default class Dom {
                     newNodeClone,
                     oldNodes[index]
                 );
+                console.log('replacing node', newNodeClone, oldNodes[index]);
                 initComponent(newNodeClone);
                 return;
             }
@@ -137,6 +161,7 @@ export default class Dom {
                 templateContent &&
                 templateContent !== getNodeContent(oldNodes[index])
             ) {
+                console.log('updating textContent', templateContent, oldNodes[index]);
                 oldNodes[index].textContent = templateContent;
             }
 
@@ -144,6 +169,7 @@ export default class Dom {
                 oldNodes[index].children.length > 0 &&
                 node.children.length < 1
             ) {
+                console.log('clearing innerHTMl', node, oldNodes[index]);
                 oldNodes[index].innerHTML = '';
                 continue;
             }
@@ -153,13 +179,14 @@ export default class Dom {
                 node.children.length > 0
             ) {
                 const fragment = document.createDocumentFragment();
+                console.log('fragmenting', node, fragment);
                 Dom.diff(node, fragment as any);
                 oldNodes[index].appendChild(fragment);
                 continue;
             }
 
             if (node.children.length > 0) {
-                console.log('diffing children', newNode, oldNode);
+                console.log('diffing children', node, oldNodes[index]);
                 Dom.diffElements(node, oldNodes[index]);
             }
         }
