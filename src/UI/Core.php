@@ -84,6 +84,11 @@ class Core
                 static::$state[$component->key][$key] = $component->{$key};
             }
 
+            $pageState = [];
+            foreach (array_values(static::$state) as $key => $value) {
+                $pageState = array_merge($pageState, $value);
+            }
+
             return [
                 'responseType' => 'json',
                 'html' => $withoutScripts ?
@@ -97,12 +102,17 @@ class Core
                          Core::init() . '</body>',
                         static::compileTemplate($component->render(), static::$state[$component->key])
                     ),
-                'state' => static::$state[$component->key],
+                'state' => $pageState,
             ];
         }
 
+        $pageState = [];
         static::$state[$component->key] = array_merge(static::$state[$component->key], get_class_vars($component::class));
         $parsedComponent = static::compileTemplate($component->render(), static::$state[$component->key]);
+        
+        foreach (array_values(static::$state) as $key => $value) {
+            $pageState = array_merge($pageState, $value);
+        }
 
         return [
             'responseType' => 'html',
@@ -113,13 +123,13 @@ class Core
                         el: document.querySelector("body"),
                         component: "' . $component::class . '",
                         components: ' . json_encode(static::$components) . ',
-                        data: ' . json_encode(static::$state[$component->key]) . ',
+                        data: ' . json_encode(array_unique($pageState)) . ',
                         methods: ' . json_encode(array_unique(static::$componentMethods)) . ',
                         path: "' . $_SERVER['REQUEST_URI'] . '",
                         requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
                     };
                 ']) . Core::init() . '</body>', $parsedComponent),
-            'state' => json_encode(static::$state[$component->key]),
+            'state' => json_encode($pageState),
         ];
     }
 
