@@ -189,6 +189,11 @@ class Core
                         preg_match('/@else\s*(.*?)\s*@endif/', $compiledWithParsedConditions, $elseConditionMatches);
                         $renderedData = $elseConditionMatches[1];
                     }
+                } else {
+                    if (strpos($compiledWithParsedConditions, '@else') !== false) {
+                        preg_match('/@else\s*(.*?)\s*@endif/', $compiledWithParsedConditions, $elseConditionMatches);
+                        $renderedData = $elseConditionMatches[1];
+                    }
                 }
             }
 
