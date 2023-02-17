@@ -520,7 +520,6 @@ var Dom = /*#__PURE__*/function () {
       }
       // If element is not the same type, replace it with new element
       if (getNodeType(node) !== getNodeType(oldNodes[index]) || !arraysMatch((_Object$keys = Object.keys((_oldNodes$index = oldNodes[index]) == null ? void 0 : _oldNodes$index.attributes)) != null ? _Object$keys : [], Object.keys(node.attributes)) || ((_oldNodes$index2 = oldNodes[index]) == null ? void 0 : _oldNodes$index2.innerHTML) !== node.innerHTML) {
-        console.log('replace', node, oldNodes[index]);
         var _newNodeClone2 = node.cloneNode(true);
         oldNodes[index].parentNode.replaceChild(_newNodeClone2, oldNodes[index]);
         initComponent(_newNodeClone2);

@@ -78,7 +78,6 @@ export default class Dom {
                 ) ||
                 oldNodes[index]?.innerHTML !== node.innerHTML
             ) {
-                console.log('replace', node, oldNodes[index]);
                 const newNodeClone = node.cloneNode(true);
                 oldNodes[index].parentNode.replaceChild(
                     newNodeClone,
