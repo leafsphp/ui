@@ -98,8 +98,7 @@ class Core
                         Core::createElement('script', [], ['
                             window._leafUIConfig.methods = ' . json_encode(array_unique(static::$componentMethods)) . ';
                             window._leafUIConfig.components = ' . json_encode(static::$components) . ';
-                        ']) .
-                         Core::init() . '</body>',
+                        ']) . Core::init() . '</body>',
                         static::compileTemplate($component->render(), static::$state[$component->key])
                     ),
                 'state' => $pageState,
@@ -109,7 +108,7 @@ class Core
         $pageState = [];
         static::$state[$component->key] = array_merge(static::$state[$component->key], get_class_vars($component::class));
         $parsedComponent = static::compileTemplate($component->render(), static::$state[$component->key]);
-        
+
         foreach (array_values(static::$state) as $key => $value) {
             $pageState = array_merge($pageState, $value);
         }
@@ -144,7 +143,7 @@ class Core
             throw new \JsonException("$filename not found!");
         }
 
-        return file_get_contents($filename);
+        return static::compileTemplate(file_get_contents($filename));
     }
 
     /**
@@ -153,6 +152,12 @@ class Core
      */
     public static function compileTemplate(string $rawText, array $state = []): string
     {
+        if (!$state) {
+            foreach (array_values(static::$state) as $key => $value) {
+                $state = array_merge($state, $value);
+            }
+        }
+
         $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) use ($state) {
             return $state[ltrim(trim($matches[1]), '$')] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
         }, $rawText);
@@ -212,6 +217,10 @@ class Core
             return "<?php switch ($matches[1]): ?>";
         }, $compiled);
 
+        $compiled = preg_replace_callback('/@loop\([\s\S]*?\)\s*[\s\S]*@endloop\s*/', function ($matches) {
+            return $matches[0];
+        }, $compiled);
+        
         $compiled = preg_replace_callback('/@case\((.*?)\)/', function ($matches) {
             return "<?php case $matches[1]: ?>";
         }, $compiled);
