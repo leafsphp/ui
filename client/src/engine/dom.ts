@@ -1,5 +1,5 @@
 import { initComponent } from './../core/component';
-import { DIRECTIVE_SHORTHANDS, arraysMatch } from './../utils/data';
+import { arraysMatch } from './../utils/data';
 
 export default class Dom {
     static diff(newNode: string, oldNode: HTMLElement): void {
@@ -51,7 +51,10 @@ export default class Dom {
                 continue;
             }
 
-            if (node instanceof HTMLScriptElement && oldNodes[index] instanceof HTMLScriptElement) {
+            if (
+                node instanceof HTMLScriptElement &&
+                oldNodes[index] instanceof HTMLScriptElement
+            ) {
                 if (
                     node.src !== oldNodes[index].src ||
                     node.innerHTML !== oldNodes[index].innerHTML
@@ -66,74 +69,16 @@ export default class Dom {
                 continue;
             }
 
+            // If element is not the same type, replace it with new element
             if (
-                arraysMatch(
+                getNodeType(node) !== getNodeType(oldNodes[index]) ||
+                !arraysMatch(
                     Object.keys(oldNodes[index]?.attributes) ?? [],
                     Object.keys(node.attributes)
-                ) &&
-                arraysMatch(
-                    Object.values(oldNodes[index]?.attributes) ?? [],
-                    Object.values(node.attributes)
-                ) &&
-                oldNodes[index]?.innerHTML === node.innerHTML
+                ) ||
+                oldNodes[index]?.innerHTML !== node.innerHTML
             ) {
-                continue;
-            }
-
-            const hasDirectivePrefix = Object.values(oldNodes[index].attributes)
-                .map((attr: any) => attr.name.startsWith('ui-'))
-                .includes(true);
-            const hasDirectiveShorthandPrefix = Object.keys(
-                DIRECTIVE_SHORTHANDS
-            ).some(shorthand =>
-                Object.values(oldNodes[index].attributes)
-                    .map((attr: any) => attr.name.startsWith(shorthand))
-                    .includes(true)
-            );
-
-            if (hasDirectivePrefix || hasDirectiveShorthandPrefix) {
-                oldNodes[index].innerHTML = node.innerHTML;
-
-                for (let j = 0; j < node.attributes.length; j++) {
-                    const attr = node.attributes[j];
-
-                    if (
-                        attr.name.startsWith('ui-') ||
-                        Object.keys(DIRECTIVE_SHORTHANDS).some(shorthand =>
-                            Object.values(oldNodes[index].attributes)
-                                .map((attr: any) =>
-                                    attr.name.startsWith(shorthand)
-                                )
-                                .includes(true)
-                        )
-                    ) {
-                        if (
-                            oldNodes[index].getAttribute(attr.name) !==
-                            attr.value
-                        ) {
-                            const newNodeClone = node.cloneNode(true);
-                            oldNodes[index].parentNode.replaceChild(
-                                newNodeClone,
-                                oldNodes[index]
-                            );
-                            initComponent(newNodeClone);
-                        }
-
-                        continue;
-                    }
-
-                    const newNodeClone = node.cloneNode(true);
-                    oldNodes[index].parentNode.replaceChild(
-                        newNodeClone,
-                        oldNodes[index]
-                    );
-                    initComponent(newNodeClone);
-                }
-                continue;
-            }
-
-            // If element is not the same type, replace it with new element
-            if (getNodeType(node) !== getNodeType(oldNodes[index])) {
+                console.log('replace', node, oldNodes[index]);
                 const newNodeClone = node.cloneNode(true);
                 oldNodes[index].parentNode.replaceChild(
                     newNodeClone,
@@ -165,7 +110,7 @@ export default class Dom {
                 node.children.length > 0
             ) {
                 const fragment = document.createDocumentFragment();
-                Dom.diff(node, fragment as any);
+                Dom.diffElements(node, fragment as any);
                 oldNodes[index].appendChild(fragment);
                 continue;
             }
