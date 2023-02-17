@@ -1,7 +1,38 @@
 export default class Dom {
-    static diff(newNode: string, oldNode: HTMLElement): void;
-    static diffElements(newNode: HTMLElement, oldNode: HTMLElement): void;
+    /**
+     * Get the body of an HTML string
+     *
+     * @param html The html to parse
+     * @param removeScripts Whether to remove scripts from the html
+     * @returns The body of the html
+     */
     static getBody(html: string, removeScripts?: boolean): HTMLElement;
-    static flattenDomIntoArray(node: HTMLElement): HTMLCollection;
-    static compareNodesAndReturnChanges(newNode: HTMLElement, oldNode: HTMLElement): Record<string, Element | null>[];
+    /**
+     * Get the type for a node
+     * @param  {HTMLElement} node The node
+     * @return {String} The type
+     */
+    static getNodeType(node: HTMLElement): string;
+    /**
+     * Get the content from a node
+     * @param  {Node}   node The node
+     * @return {String}      The type
+     */
+    static getNodeContent(node: HTMLElement): string | null;
+    /**
+     * Diff the DOM from a string and an element
+     *
+     * @param newNode The new node
+     * @param oldNode The old node
+     * @returns The diffed node
+     */
+    static diff(newNode: string, oldNode: HTMLElement): void;
+    /**
+     * Diff the DOM from two elements
+     *
+     * @param newNode The new node
+     * @param oldNode The old node
+     * @returns The diffed node
+     */
+    static diffElements(newNode: HTMLElement, oldNode: HTMLElement): void;
 }

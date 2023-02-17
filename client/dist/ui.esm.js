@@ -470,32 +470,66 @@ window.leafUI = window.leafUI || {};
 
 var Dom = /*#__PURE__*/function () {
   function Dom() {}
+  /**
+   * Get the body of an HTML string
+   *
+   * @param html The html to parse
+   * @param removeScripts Whether to remove scripts from the html
+   * @returns The body of the html
+   */
+  Dom.getBody = function getBody(html, removeScripts) {
+    if (removeScripts === void 0) {
+      removeScripts = false;
+    }
+    var parser = new DOMParser();
+    var dom = parser.parseFromString(html, 'text/html');
+    if (removeScripts === true) {
+      var scripts = dom.body.getElementsByTagName('script');
+      for (var i = 0; i < scripts.length; i++) {
+        scripts[i].remove();
+      }
+    }
+    return dom.body;
+  }
+  /**
+   * Get the type for a node
+   * @param  {HTMLElement} node The node
+   * @return {String} The type
+   */;
+  Dom.getNodeType = function getNodeType(node) {
+    if (node.nodeType === 3) return 'text';
+    if (node.nodeType === 8) return 'comment';
+    return node.tagName.toLowerCase();
+  }
+  /**
+   * Get the content from a node
+   * @param  {Node}   node The node
+   * @return {String}      The type
+   */;
+  Dom.getNodeContent = function getNodeContent(node) {
+    if (node.children && node.children.length > 0) return null;
+    return node.textContent;
+  }
+  /**
+   * Diff the DOM from a string and an element
+   *
+   * @param newNode The new node
+   * @param oldNode The old node
+   * @returns The diffed node
+   */;
   Dom.diff = function diff(newNode, oldNode) {
     Dom.diffElements(Dom.getBody(newNode, false), oldNode);
-  };
+  }
+  /**
+   * Diff the DOM from two elements
+   *
+   * @param newNode The new node
+   * @param oldNode The old node
+   * @returns The diffed node
+   */;
   Dom.diffElements = function diffElements(newNode, oldNode) {
     var newNodes = Array.prototype.slice.call(newNode.children);
     var oldNodes = Array.prototype.slice.call(oldNode.children);
-    /**
-     * Get the type for a node
-     * @param  {Node}   node The node
-     * @return {String} The type
-     */
-    var getNodeType = function getNodeType(node) {
-      if (node.nodeType === 3) return 'text';
-      if (node.nodeType === 8) return 'comment';
-      return node.tagName.toLowerCase();
-    };
-    /**
-     * Get the content from a node
-     * @param  {Node}   node The node
-     * @return {String}      The type
-     */
-    var getNodeContent = function getNodeContent(node) {
-      if (node.children && node.children.length > 0) return null;
-      return node.textContent;
-    };
-    // If extra elements in DOM, remove them
     var count = oldNodes.length - newNodes.length;
     if (count > 0) {
       for (; count > 0; count--) {
@@ -518,16 +552,15 @@ var Dom = /*#__PURE__*/function () {
         }
         continue;
       }
-      // If element is not the same type, replace it with new element
-      if (getNodeType(node) !== getNodeType(oldNodes[index]) || !arraysMatch((_Object$keys = Object.keys((_oldNodes$index = oldNodes[index]) == null ? void 0 : _oldNodes$index.attributes)) != null ? _Object$keys : [], Object.keys(node.attributes)) || ((_oldNodes$index2 = oldNodes[index]) == null ? void 0 : _oldNodes$index2.innerHTML) !== node.innerHTML) {
+      if (Dom.getNodeType(node) !== Dom.getNodeType(oldNodes[index]) || !arraysMatch((_Object$keys = Object.keys((_oldNodes$index = oldNodes[index]) == null ? void 0 : _oldNodes$index.attributes)) != null ? _Object$keys : [], Object.keys(node.attributes)) || ((_oldNodes$index2 = oldNodes[index]) == null ? void 0 : _oldNodes$index2.innerHTML) !== node.innerHTML) {
         var _newNodeClone2 = node.cloneNode(true);
         oldNodes[index].parentNode.replaceChild(_newNodeClone2, oldNodes[index]);
         initComponent(_newNodeClone2);
         continue;
       }
       // If content is different, update it
-      var templateContent = getNodeContent(node);
-      if (templateContent && templateContent !== getNodeContent(oldNodes[index])) {
+      var templateContent = Dom.getNodeContent(node);
+      if (templateContent && templateContent !== Dom.getNodeContent(oldNodes[index])) {
         oldNodes[index].textContent = templateContent;
       }
       if (oldNodes[index].children.length > 0 && node.children.length < 1) {
@@ -544,44 +577,6 @@ var Dom = /*#__PURE__*/function () {
         Dom.diffElements(node, oldNodes[index]);
       }
     }
-  };
-  Dom.getBody = function getBody(html, removeScripts) {
-    if (removeScripts === void 0) {
-      removeScripts = false;
-    }
-    var parser = new DOMParser();
-    var dom = parser.parseFromString(html, 'text/html');
-    if (removeScripts === true) {
-      var scripts = dom.body.getElementsByTagName('script');
-      for (var i = 0; i < scripts.length; i++) {
-        scripts[i].remove();
-      }
-    }
-    return dom.body;
-  };
-  Dom.flattenDomIntoArray = function flattenDomIntoArray(node) {
-    return node.getElementsByTagName('*');
-  };
-  Dom.compareNodesAndReturnChanges = function compareNodesAndReturnChanges(newNode, oldNode) {
-    var newNodes = Dom.flattenDomIntoArray(newNode);
-    var oldNodes = Dom.flattenDomIntoArray(oldNode);
-    var changes = [];
-    for (var i = 0; i < newNodes.length; i++) {
-      if (newNodes[i] !== oldNodes[i]) {
-        if (newNodes[i].tagName !== oldNodes[i].tagName) {
-          changes.push({
-            oldNode: null,
-            newNode: newNodes[i]
-          });
-        } else {
-          changes.push({
-            oldNode: oldNodes[i],
-            newNode: newNodes[i]
-          });
-        }
-      }
-    }
-    return changes;
   };
   return Dom;
 }();
