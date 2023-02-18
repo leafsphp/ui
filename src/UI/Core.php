@@ -57,9 +57,9 @@ class Core
 
         if ($componentData['responseType'] === 'json') {
             unset($componentData['responseType']);
-            (new \Leaf\Http\Response)->json($componentData);
+            (new \Leaf\Http\Response())->json($componentData);
         } else {
-            (new \Leaf\Http\Response)->markup($componentData['html']);
+            (new \Leaf\Http\Response())->markup($componentData['html']);
         }
     }
 
@@ -215,7 +215,12 @@ class Core
             preg_match('/@if\((.*?)\)/', $compiledWithParsedConditions, $condition);
 
             if (eval("return $condition[1];") === true) {
-                preg_match('/@if\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*)/', $compiledWithParsedConditions, $ifConditionMatches);
+                preg_match(
+                    '/@if\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*)/',
+                    $compiledWithParsedConditions,
+                    $ifConditionMatches
+                );
+
                 $renderedData = preg_replace('/@if\([\s\S]*?\)\s*[\s\S]*?/', '', $ifConditionMatches[0]);
                 $renderedData = preg_replace('/\s*@elseif\([\s\S]*?\)\s*[\s\S]*?/', '', $renderedData);
             } else {
@@ -223,7 +228,12 @@ class Core
                     preg_match('/@elseif\((.*?)\)/', $compiledWithParsedConditions, $elseifCondition);
 
                     if (eval("return $elseifCondition[1];") === true) {
-                        preg_match('/@elseif\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*)/', $compiledWithParsedConditions, $elseifConditionMatches);
+                        preg_match(
+                            '/@elseif\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*)/',
+                            $compiledWithParsedConditions,
+                            $elseifConditionMatches
+                        );
+
                         $renderedData = preg_replace('/@elseif\([\s\S]*?\)\s*[\s\S]*?/', '', $elseifConditionMatches[0]);
                         $renderedData = preg_replace('/\s*@else\s*[\s\S]*?/', '', $renderedData);
                     } else if (strpos($compiledWithParsedConditions, '@else') !== false) {
@@ -254,7 +264,23 @@ class Core
         }, $compiled);
 
         $compiled = preg_replace_callback('/@loop\([\s\S]*?\)\s*[\s\S]*@endloop\s*/', function ($matches) {
-            return $matches[0];
+            $rendered = '';
+            $loopMatches = null;
+
+            preg_match('/@loop\((.*?)\)/', $matches[0], $loopMatches);
+
+            static::loop(eval("return $loopMatches[1];"), function ($key, $value) use ($matches, &$rendered) {
+                $regex = '/@loop\((.*?)\)([\s\S]*?)@endloop/';
+                preg_match($regex, $matches[0], $regexLoopMatches);
+
+                $rendered .= str_replace(
+                    ['@key', '@value'],
+                    [$key, $value],
+                    $regexLoopMatches[2]
+                );
+            });
+
+            return $rendered;
         }, $compiled);
         
         $compiled = preg_replace_callback('/@case\((.*?)\)/', function ($matches) {
@@ -387,12 +413,16 @@ class Core
     /**
      * Loop over an array of items
      * 
-     * @param array $array The array to loop through
+     * @param array|string|int $array The array to loop through
      * @param callable $handler Call back function to run per iteration
      */
-    public static function loop(array $array, callable $handler)
+    public static function loop($array, callable $handler)
     {
         $element = "";
+
+        if (!is_array($array)) {
+            $array = explode(',', str_repeat(',', (int) $array - 1));
+        }
 
         if (is_callable($handler)) {
             foreach ($array as $key => $value) {
