@@ -276,7 +276,8 @@ class Core
 
         $compiled = preg_replace_callback('/@component\((.*?)\)/', function ($matches) {
             $paramsArray = preg_split('/,\s*/', $matches[1]);
-            return Core::component($paramsArray[0], eval("return $paramsArray[1];"));
+            $props = preg_replace('/\s+/', '', $paramsArray[1] ?? '[]');
+            return Core::component($paramsArray[0], eval("return $props;"));
         }, $compiled);
 
         return $compiled;
