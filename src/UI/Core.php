@@ -79,12 +79,13 @@ class Core
             foreach ($config['payload']['data'] as $key => $value) {
                 if (property_exists($componentCalled, $key)) {
                     $componentCalled->{$key} = $value;
+                    static::$state[$componentCalled->key][$key] = $value;
                 }
             }
 
             if ($config['type'] === 'callMethod') {
                 // compile and render to get the latest state (we don't really output anything)
-                static::compileTemplate($componentCalled->render(), static::$state[$componentCalled->key]);
+                static::compileTemplate($component->render());
 
                 $config['payload']['methodArgs'] = explode(',', $config['payload']['methodArgs']);
                 $methodToCall = [$componentCalled, $config['payload']['method']];
@@ -94,6 +95,14 @@ class Core
                         if (in_array($config['payload']['method'], $wValue)) {
                             $componentCalled = new (static::$components[$wKey]);
                             $methodToCall = [$componentCalled, $config['payload']['method']];
+
+                            // set the state for the component
+                            foreach ($config['payload']['data'] as $key => $value) {
+                                if (property_exists($componentCalled, $key)) {
+                                    $componentCalled->{$key} = $value;
+                                }
+                            }
+
                             break;
                         }
                     }
@@ -119,14 +128,14 @@ class Core
             return [
                 'responseType' => 'json',
                 'html' => $withoutScripts ?
-                    static::compileTemplate($componentCalled->render(), static::$state[$componentCalled->key]) :
+                    static::compileTemplate($component->render()) :
                     str_replace(
                         '</body>',
                         Core::createElement('script', [], ['
                             window._leafUIConfig.methods = ' . json_encode(array_unique(static::$componentMethods)) . ';
                             window._leafUIConfig.components = ' . json_encode(static::$components) . ';
                         ']) . Core::init() . '</body>',
-                        static::compileTemplate($componentCalled->render(), static::$state[$componentCalled->key])
+                        static::compileTemplate($component->render())
                     ),
                 'state' => $pageState,
             ];
@@ -179,7 +188,7 @@ class Core
      */
     public static function compileTemplate(string $rawText, array $state = []): string
     {
-        if (!$state) {
+        if (empty($state)) {
             foreach (array_values(static::$state) as $key => $value) {
                 $state = array_merge($state, $value);
             }
@@ -302,12 +311,12 @@ class Core
         if (!$component->key) {
             $component->key = static::randomId($component::class);
         }
-        
-        static::$state[$component->key] = array_unique(array_merge(get_class_vars($component::class), $props));
+
+        static::$state[$component->key] = array_unique(array_merge(get_class_vars($component::class), $props, static::$state[$component->key] ?? []));
         static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
         static::$mappedComponentMethods = array_merge(static::$mappedComponentMethods, [$component->key => get_class_methods($component)]);
         static::$components = array_merge(static::$components, [$component->key => $component::class]);
-  
+
         $config = [
             'type' => 'component',
             'payload' => [
