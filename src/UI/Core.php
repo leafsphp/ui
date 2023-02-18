@@ -23,6 +23,9 @@ class Core
     /** List of component methods */
     protected static $componentMethods = [];
 
+    /** List of mapped component methods */
+    protected static $mappedComponentMethods = [];
+
     /**
      * Initialize Leaf UI on a page
      * @return string
@@ -41,9 +44,13 @@ class Core
     {
         $config = json_decode((new \Leaf\Http\Request())->get('_leaf_ui_config', false) ?? '', true) ?? [];
 
-        $component->key = static::randomId($component::class);
+        if (!$component->key) {
+            $component->key = static::randomId($component::class);
+        }
+
         static::$state[$component->key] = get_class_vars($component::class);
         static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
+        static::$mappedComponentMethods = array_merge(static::$mappedComponentMethods, [$component->key => get_class_methods($component)]);
         static::$components = array_merge(static::$components, [$component->key => $component::class]);
 
         $componentData = static::buildComponent($component, $config);
@@ -66,22 +73,42 @@ class Core
      */
     protected static function buildComponent(Component $component, array $config, bool $withoutScripts = false)
     {
+        $componentCalled = $component;
+
         if (is_string($config['type'] ?? null)) {
             foreach ($config['payload']['data'] as $key => $value) {
-                $component->{$key} = $value;
+                if (property_exists($componentCalled, $key)) {
+                    $componentCalled->{$key} = $value;
+                }
             }
 
             if ($config['type'] === 'callMethod') {
+                // compile and render to get the latest state (we don't really output anything)
+                static::compileTemplate($componentCalled->render(), static::$state[$componentCalled->key]);
+
                 $config['payload']['methodArgs'] = explode(',', $config['payload']['methodArgs']);
+                $methodToCall = [$componentCalled, $config['payload']['method']];
+
+                if (!method_exists($componentCalled, $config['payload']['method'])) {
+                    foreach (static::$mappedComponentMethods as $wKey => $wValue) {
+                        if (in_array($config['payload']['method'], $wValue)) {
+                            $componentCalled = new (static::$components[$wKey]);
+                            $methodToCall = [$componentCalled, $config['payload']['method']];
+                            break;
+                        }
+                    }
+                }
 
                 call_user_func(
-                    [$component, $config['payload']['method']],
+                    $methodToCall,
                     ...$config['payload']['methodArgs']
                 );
             }
 
             foreach ($config['payload']['data'] as $key => $value) {
-                static::$state[$component->key][$key] = $component->{$key};
+                if (property_exists($componentCalled, $key)) {
+                    static::$state[$componentCalled->key][$key] = $componentCalled->{$key};
+                }
             }
 
             $pageState = [];
@@ -92,14 +119,14 @@ class Core
             return [
                 'responseType' => 'json',
                 'html' => $withoutScripts ?
-                    static::compileTemplate($component->render(), static::$state[$component->key]) :
+                    static::compileTemplate($componentCalled->render(), static::$state[$componentCalled->key]) :
                     str_replace(
                         '</body>',
                         Core::createElement('script', [], ['
                             window._leafUIConfig.methods = ' . json_encode(array_unique(static::$componentMethods)) . ';
                             window._leafUIConfig.components = ' . json_encode(static::$components) . ';
                         ']) . Core::init() . '</body>',
-                        static::compileTemplate($component->render(), static::$state[$component->key])
+                        static::compileTemplate($componentCalled->render(), static::$state[$componentCalled->key])
                     ),
                 'state' => $pageState,
             ];
@@ -248,7 +275,8 @@ class Core
         }, $compiled);
 
         $compiled = preg_replace_callback('/@component\((.*?)\)/', function ($matches) {
-            return Core::component($matches[1]);
+            $paramsArray = preg_split('/,\s*/', $matches[1]);
+            return Core::component($paramsArray[0], eval("return $paramsArray[1];"));
         }, $compiled);
 
         return $compiled;
@@ -260,7 +288,7 @@ class Core
      * @param string $component The component to embed
      * @return string
      */
-    public static function component(string $component, $state = []): string
+    public static function component(string $component, array $props = []): string
     {
         $component = trim($component, '"\'\`');
 
@@ -269,11 +297,16 @@ class Core
         }
 
         $component = new $component;
-        $component->key = static::randomId($component::class);
-        static::$state[$component->key] = get_class_vars($component::class);
-        static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
-        static::$components = array_merge(static::$components, [$component->key => $component::class]);
 
+        if (!$component->key) {
+            $component->key = static::randomId($component::class);
+        }
+        
+        static::$state[$component->key] = array_unique(array_merge(get_class_vars($component::class), $props));
+        static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
+        static::$mappedComponentMethods = array_merge(static::$mappedComponentMethods, [$component->key => get_class_methods($component)]);
+        static::$components = array_merge(static::$components, [$component->key => $component::class]);
+  
         $config = [
             'type' => 'component',
             'payload' => [
