@@ -128,14 +128,14 @@ class Core
             return [
                 'responseType' => 'json',
                 'html' => $withoutScripts ?
-                    static::compileTemplate($component->render()) :
+                    static::compileTemplate($component->render(), $pageState) :
                     str_replace(
                         '</body>',
                         Core::createElement('script', [], ['
                             window._leafUIConfig.methods = ' . json_encode(array_unique(static::$componentMethods)) . ';
                             window._leafUIConfig.components = ' . json_encode(static::$components) . ';
                         ']) . Core::init() . '</body>',
-                        static::compileTemplate($component->render())
+                        static::compileTemplate($component->render(), $pageState)
                     ),
                 'state' => $pageState,
             ];
@@ -158,7 +158,7 @@ class Core
                         el: document.querySelector("body"),
                         component: "' . $component::class . '",
                         components: ' . json_encode(static::$components) . ',
-                        data: ' . json_encode(array_unique($pageState)) . ',
+                        data: ' . json_encode(array_merge($pageState, ['key' => null])) . ',
                         methods: ' . json_encode(array_unique(static::$componentMethods)) . ',
                         path: "' . $_SERVER['REQUEST_URI'] . '",
                         requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
@@ -206,6 +206,58 @@ class Core
             return eval("return $compiledWithVars;");
         }, $compiled);
 
+        $compiled = preg_replace_callback('/@loop\([\s\S]*?\)\s*[\s\S]*@endloop\s*/', function ($matches) use ($state) {
+            $rendered = '';
+            $loopMatches = null;
+
+            preg_match('/@loop\((.*?)\)/', $matches[0], $loopMatches);
+
+            $dataToLoop = "return $loopMatches[1];";
+
+            if (strpos($loopMatches[1], '$') !== false) {
+                $loopMatches[1] = $state[ltrim(trim($loopMatches[1]), '$')] ?? trigger_error($loopMatches[1] . ' is not defined', E_USER_ERROR);
+                $dataToLoop = 'return json_decode(\'' . json_encode($loopMatches[1]) . '\', true);';
+            }
+
+            static::loop(eval($dataToLoop), function ($value, $key) use ($matches, &$rendered, $state) {
+                $regex = '/@loop\((.*?)\)([\s\S]*?)@endloop/';
+                preg_match($regex, $matches[0], $regexLoopMatches);
+
+                preg_match('/@key/', $regexLoopMatches[2], $keyMatches);
+                preg_match('/@value/', $regexLoopMatches[2], $valueMatches);
+
+                $renderedString = str_replace(
+                    ['@key', '@value', "\""],
+                    [$key, '$value', "'"],
+                    preg_replace(
+                        '/@value\[[\'"][^\'"]*[\'"]\]/',
+                        '{$0}',
+                        preg_replace_callback(
+                            '/@if\((.*?)\)/',
+                            function ($ifStatementMatches) {
+                                $compiledIf = '';
+
+                                if (strpos($ifStatementMatches[1], '@value[') !== false) {
+                                    $compiledIf = preg_replace('/@value\[[\'"]([^\'"]*)[\'"]\]/', '\'@value[\'$1\']\'', $ifStatementMatches[0]);
+                                }
+
+                                if (strpos($compiledIf, '@key') !== false) {
+                                    $compiledIf = str_replace('@key', '\'@key\'', $compiledIf);
+                                }
+
+                                return $compiledIf;
+                            },
+                            $regexLoopMatches[2]
+                        )
+                    )
+                );
+
+                $rendered .= eval("\$value = json_decode('" . json_encode($value) . "', true); return \"$renderedString\";");
+            });
+
+            return $rendered;
+        }, $compiled);
+
         $compiled = preg_replace_callback('/@if\([\s\S]*?\)\s*[\s\S]*?(\s*@endif\s*)/', function ($matches) use ($state) {
             $renderedData = '';
             $compiledWithParsedConditions = preg_replace_callback('/\$([a-zA-Z0-9_]+)/', function ($matches) use ($state) {
@@ -223,6 +275,7 @@ class Core
 
                 $renderedData = preg_replace('/@if\([\s\S]*?\)\s*[\s\S]*?/', '', $ifConditionMatches[0]);
                 $renderedData = preg_replace('/\s*@elseif\([\s\S]*?\)\s*[\s\S]*?/', '', $renderedData);
+                $renderedData = preg_replace('/\s*@else\s*[\s\S]*?/', '', $renderedData);
             } else {
                 if (strpos($compiledWithParsedConditions, '@elseif') !== false) {
                     preg_match('/@elseif\((.*?)\)/', $compiledWithParsedConditions, $elseifCondition);
@@ -249,50 +302,6 @@ class Core
             }
 
             return $renderedData;
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@for\([\s\S]*?\)\s*[\s\S]*?(\s*@endfor\s*)/', function ($matches) {
-            return "<?php for ($matches[1]): ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@foreach\([\s\S]*?\)\s*[\s\S]*?(\s*@endforeach\s*)/', function ($matches) {
-            return "<?php foreach ($matches[1]): ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@switch\([\s\S]*?\)\s*[\s\S]*?(\s*@endswitch\s*)/', function ($matches) {
-            return "<?php switch ($matches[1]): ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@loop\([\s\S]*?\)\s*[\s\S]*@endloop\s*/', function ($matches) {
-            $rendered = '';
-            $loopMatches = null;
-
-            preg_match('/@loop\((.*?)\)/', $matches[0], $loopMatches);
-
-            static::loop(eval("return $loopMatches[1];"), function ($key, $value) use ($matches, &$rendered) {
-                $regex = '/@loop\((.*?)\)([\s\S]*?)@endloop/';
-                preg_match($regex, $matches[0], $regexLoopMatches);
-
-                $rendered .= str_replace(
-                    ['@key', '@value'],
-                    [$key, $value],
-                    $regexLoopMatches[2]
-                );
-            });
-
-            return $rendered;
-        }, $compiled);
-        
-        $compiled = preg_replace_callback('/@case\((.*?)\)/', function ($matches) {
-            return "<?php case $matches[1]: ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@break/', function ($matches) {
-            return "<?php break; ?>";
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@continue/', function ($matches) {
-            return "<?php continue; ?>";
         }, $compiled);
 
         $compiled = preg_replace_callback('/@php\s*([\s\S]+?)\s*@endphp/', function ($matches) {
@@ -338,7 +347,7 @@ class Core
             $component->key = static::randomId($component::class);
         }
 
-        static::$state[$component->key] = array_unique(array_merge(get_class_vars($component::class), $props, static::$state[$component->key] ?? []));
+        static::$state[$component->key] = array_merge(get_class_vars($component::class), $props, static::$state[$component->key] ?? []);
         static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
         static::$mappedComponentMethods = array_merge(static::$mappedComponentMethods, [$component->key => get_class_methods($component)]);
         static::$components = array_merge(static::$components, [$component->key => $component::class]);
