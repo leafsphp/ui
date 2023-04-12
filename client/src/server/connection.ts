@@ -9,14 +9,16 @@ export default class Connection {
         uiData: Record<string, any>,
         dom: typeof Dom
     ) {
+        const component: Element = uiData.element.closest('[ui-state]');
+        const componentData = component.getAttribute('ui-state') ?? '{}';
+
         const payload = {
             type,
             payload: {
                 params: [],
                 method: uiData.method,
                 methodArgs: uiData.methodArgs,
-                component: uiData.config.component,
-                data: uiData.config.data
+                data: componentData,
             }
         };
 
@@ -52,51 +54,4 @@ export default class Connection {
             }
         });
     }
-
-    //    public sendMessage(message) {
-    //        // Forward the query string for the ajax requests.
-
-    //            .then(response => {
-    //                if (response.ok) {
-    //                    response.text().then(response => {
-    //                        if (this.isOutputFromDump(response)) {
-    //                            this.onError(message);
-    //                            this.showHtmlModal(response);
-    //                        } else {
-    //                            this.onMessage(
-    //                                message,
-    //                                JSON.parse(response)
-    //                            );
-    //                        }
-    //                    });
-    //                } else {
-    //                    if (
-    //                        this.onError(
-    //                            message,
-    //                            response.status,
-    //                            response
-    //                        ) === false
-    //                    )
-    //                        return;
-
-    //                    if (response.status === 419) {
-    //                        if (store.sessionHasExpired) return;
-
-    //                        store.sessionHasExpired = true;
-
-    //                        this.showExpiredMessage(
-    //                            response,
-    //                            message
-    //                        );
-    //                    } else {
-    //                        response.text().then(response => {
-    //                            this.showHtmlModal(response);
-    //                        });
-    //                    }
-    //                }
-    //            })
-    //            .catch(() => {
-    //                this.onError(message);
-    //            });
-    //    }
 }

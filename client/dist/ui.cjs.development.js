@@ -394,14 +394,16 @@ var error = function error(err, expression, el) {
 var Connection = /*#__PURE__*/function () {
   function Connection() {}
   Connection.connect = function connect(type, uiData, dom) {
+    var _component$getAttribu;
+    var component = uiData.element.closest('[ui-state]');
+    var componentData = (_component$getAttribu = component.getAttribute('ui-state')) != null ? _component$getAttribu : '{}';
     var payload = {
       type: type,
       payload: {
         params: [],
         method: uiData.method,
         methodArgs: uiData.methodArgs,
-        component: uiData.config.component,
-        data: uiData.config.data
+        data: componentData
       }
     };
     return fetch(window.location.href + "?_leaf_ui_config=" + JSON.stringify(payload), {
@@ -590,7 +592,7 @@ var compute = function compute(expression, el, refs) {
   var specialPropertiesNames = ['$el', '$emit', '$event', '$refs', '$dom'];
   // This "revives" a function from a string, only using the new Function syntax once during compilation.
   // This is because raw function is ~50,000x faster than new Function
-  var computeFunction = new Function("return (" + specialPropertiesNames.join(',') + ") => {\n            const method = " + JSON.stringify(expression) + ".split('(')[0];\n            const methodArgs = " + JSON.stringify(expression) + ".substring(" + JSON.stringify(expression) + ".indexOf('(') + 1, " + JSON.stringify(expression) + ".lastIndexOf(')'));\n\n            if (!window._leafUIConfig.methods.includes(method)) {\n                return error(new ReferenceError(method + ' is not defined'), method, $el);\n            }\n\n            (" + Connection.connect + ")('callMethod', { method, methodArgs, config: window._leafUIConfig }, $dom);\n        }")();
+  var computeFunction = new Function("return (" + specialPropertiesNames.join(',') + ") => {\n            const method = " + JSON.stringify(expression) + ".split('(')[0];\n            const methodArgs = " + JSON.stringify(expression) + ".substring(" + JSON.stringify(expression) + ".indexOf('(') + 1, " + JSON.stringify(expression) + ".lastIndexOf(')'));\n\n            if (!window._leafUIConfig.methods.includes(method)) {\n                return error(new ReferenceError(method + ' is not defined'), method, $el);\n            }\n\n            (" + Connection.connect + ")('callMethod', { element: $el, method, methodArgs, config: window._leafUIConfig }, $dom);\n        }")();
   var emit = function emit(name, options, dispatchGlobal) {
     if (dispatchGlobal === void 0) {
       dispatchGlobal = true;

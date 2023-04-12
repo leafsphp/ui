@@ -22,7 +22,7 @@ export const compute = (
 
             (${
                 Connection.connect
-            })('callMethod', { method, methodArgs, config: window._leafUIConfig }, $dom);
+            })('callMethod', { element: $el, method, methodArgs, config: window._leafUIConfig }, $dom);
         }`
     )();
 
