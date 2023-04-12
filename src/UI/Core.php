@@ -32,7 +32,9 @@ class Core
      */
     public static function init(): string
     {
-        return implode(static::$scripts) . static::createElement('script', ['src' => '/vendor/leafs/ui/client/dist/ui.cjs.production.min.js'], ['']);
+        return implode(static::$scripts) . static::createElement('script', [
+            'src' => '/vendor/leafs/ui/client/dist/ui.cjs.production.min.js',
+        ], ['']);
     }
 
     /**
@@ -45,10 +47,13 @@ class Core
         $config = json_decode((new \Leaf\Http\Request())->get('_leaf_ui_config', false) ?? '', true) ?? [];
 
         if (!$component->key) {
-            $component->key = static::randomId($component::class);
+            $component->key = Utils::randomId($component::class);
         }
 
-        static::$state[$component->key] = get_class_vars($component::class);
+        static::$state[$component->key] = array_merge(get_class_vars($component::class), [
+            'key' => $component->key,
+        ]);
+
         static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
         static::$mappedComponentMethods = array_merge(static::$mappedComponentMethods, [$component->key => get_class_methods($component)]);
         static::$components = array_merge(static::$components, [$component->key => $component::class]);
@@ -121,6 +126,7 @@ class Core
             }
 
             $pageState = [];
+            $componentState = static::$state[$componentCalled->key];
             foreach (array_values(static::$state) as $key => $value) {
                 $pageState = array_merge($pageState, $value);
             }
@@ -128,22 +134,24 @@ class Core
             return [
                 'responseType' => 'json',
                 'html' => $withoutScripts ?
-                    static::compileTemplate($component->render(), $pageState) :
+                    preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode($componentState) . "' $2>", static::compileTemplate($component->render(), $pageState), 1) :
                     str_replace(
                         '</body>',
                         Core::createElement('script', [], ['
                             window._leafUIConfig.methods = ' . json_encode(array_unique(static::$componentMethods)) . ';
                             window._leafUIConfig.components = ' . json_encode(static::$components) . ';
                         ']) . Core::init() . '</body>',
-                        static::compileTemplate($component->render(), $pageState)
+                        preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode($componentState) . "' $2>", static::compileTemplate($component->render(), $pageState), 1)
                     ),
-                'state' => $pageState,
             ];
         }
 
         $pageState = [];
-        static::$state[$component->key] = array_merge(static::$state[$component->key], get_class_vars($component::class));
-        $parsedComponent = static::compileTemplate($component->render(), static::$state[$component->key]);
+        static::$state[$component->key] = array_merge(static::$state[$component->key], get_class_vars($component::class), [
+            'key' => $component->key,
+        ]);
+        $componentState = static::$state[$component->key];
+        $parsedComponent = preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode($componentState) . "' $2>", static::compileTemplate($component->render(), static::$state[$component->key]), 1);
 
         foreach (array_values(static::$state) as $key => $value) {
             $pageState = array_merge($pageState, $value);
@@ -158,13 +166,11 @@ class Core
                         el: document.querySelector("body"),
                         component: "' . $component::class . '",
                         components: ' . json_encode(static::$components) . ',
-                        data: ' . json_encode(array_merge($pageState, ['key' => null])) . ',
                         methods: ' . json_encode(array_unique(static::$componentMethods)) . ',
                         path: "' . $_SERVER['REQUEST_URI'] . '",
                         requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
                     };
                 ']) . Core::init() . '</body>', $parsedComponent),
-            'state' => json_encode($pageState),
         ];
     }
 
@@ -197,6 +203,12 @@ class Core
         $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) use ($state) {
             return $state[ltrim(trim($matches[1]), '$')] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
         }, $rawText);
+
+        $compiled = preg_replace_callback('/<style.*?>(.*?)<\/style>/is', function ($matches) {
+            $newCSS = (new CSS())->add($matches[1])->minify();
+            return str_replace($matches[1], $newCSS, $matches[0]);
+        }, $compiled);
+
 
         $compiled = preg_replace_callback('/\$eval\((.*?)\)/', function ($matches) use ($state) {
             $compiledWithVars = preg_replace_callback('/\$([a-zA-Z0-9_]+)/', function ($matches) use ($state) {
@@ -344,10 +356,10 @@ class Core
         $component = new $component;
 
         if (!$component->key) {
-            $component->key = static::randomId($component::class);
+            $component->key = Utils::randomId($component::class);
         }
 
-        static::$state[$component->key] = array_merge(get_class_vars($component::class), $props, static::$state[$component->key] ?? []);
+        static::$state[$component->key] = array_merge(get_class_vars($component::class), static::$state[$component->key] ?? [], ['key' => $component->key], $props);
         static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
         static::$mappedComponentMethods = array_merge(static::$mappedComponentMethods, [$component->key => get_class_methods($component)]);
         static::$components = array_merge(static::$components, [$component->key => $component::class]);
@@ -363,7 +375,7 @@ class Core
             ],
         ];
 
-        $componentData = static::buildComponent(new $component, $config, true);
+        $componentData = static::buildComponent($component, $config, true);
 
         return $componentData['html'];
     }
@@ -440,22 +452,6 @@ class Core
         }
 
         return $element;
-    }
-
-    /**
-     * Generate a random id
-     *
-     * @param string $element An html element name to append to id
-     * @return string The random id
-     */
-    public static function randomId($element = '')
-    {
-        $rand = '';
-        $seed = str_split('abcdefghijklmnopqrstuvwxyz' . 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' . '0123456789_-');
-        shuffle($seed);
-        foreach (array_rand($seed, 5) as $k) $rand .= $seed[$k];
-
-        return "$rand-$element";
     }
 
     protected static function parseStyles(array $styles): string
