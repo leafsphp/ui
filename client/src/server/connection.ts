@@ -9,8 +9,15 @@ export default class Connection {
         uiData: Record<string, any>,
         dom: typeof Dom
     ) {
-        const component: Element = uiData.element.closest('[ui-state]');
-        const componentData = component.getAttribute('ui-state') ?? '{}';
+        const pageState: Record<string, any> = {};
+        const component: HTMLElement = uiData.element.closest('[ui-state]');
+        const componentData = JSON.parse(component?.getAttribute('ui-state') ?? '{}');
+        const components = document.querySelectorAll('[ui-state]');
+
+        components.forEach((i) => {
+            const attr = JSON.parse(i.getAttribute('ui-state') ?? '{}');
+            pageState[attr.key] = attr;
+        });
 
         const payload = {
             type,
@@ -18,7 +25,8 @@ export default class Connection {
                 params: [],
                 method: uiData.method,
                 methodArgs: uiData.methodArgs,
-                data: componentData,
+                component: componentData?.key,
+                data: pageState,
             }
         };
 
@@ -47,7 +55,12 @@ export default class Connection {
                 response.text().then(response => {
                     const data = JSON.parse(response);
                     window._leafUIConfig.data = data.state;
-                    dom.diff(data.html, document.body!);
+                    dom.diff(
+                        data.html,
+                        component.nodeName === 'HTML' || !component
+                            ? document.body!
+                            : component
+                    );
                 });
             } else {
                 error(await response.text().then(res => res));
