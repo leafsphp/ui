@@ -11,23 +11,21 @@ Leaf UI is a PHP library for building user interfaces.
 
 Leaf UI doesn't need a new compiler or any extensive compiling, it's just the same old PHP you write everyday; as such, you can build full scalable Leaf UI powered apps or just sprinkle Leaf UI into your existing HTML/PHP code.
 
-v0.2.0 of Leaf UI is currently in development. It's a complete rewrite of the library and will be released soon. It comes with a lot of new features and a new API. Leaf UI v0.2.0 will allow you to build full scalable Leaf UI powered apps, write reactive UIs all in PHP. You can think of it as a PHP version of React.
+v0.2.0 of Leaf UI is currently in development, it is a complete rewrite of the library that comes with a lot of new features and a new API. Leaf UI v0.2.0 will allow you to build full scalable Leaf UI powered apps, write reactive UIs all in PHP. You can think of it as a PHP version of React.
 
 ## Installing Leaf UI
 
-Like most PHP libraries, we recommend installing Leaf UI with [composer](//getcomposer.org). Just open up your console and type:
+Like most PHP libraries, we recommend installing Leaf UI with the [Leaf CLI](https://cli.leafphp.dev):
 
 ```bash
-composer require leafs/ui
+leaf install ui@dev-next
 ```
 
-Or install the next version of Leaf UI:
+Or with [composer](//getcomposer.org). Just open up your console and type:
 
 ```bash
-composer require leafs/ui@dev-next
+composer require leafs/ui:dev-next
 ```
-
-This will install Leaf UI into your application. You don't have to worry about bloating your application: Leaf UI has no external dependencies.
 
 After this, you can use all of Leaf UI's methods and components.
 
@@ -59,14 +57,17 @@ class Test2 extends Component
 
     public function render()
     {
-        return Core::createElement('body', [], [
-            Core::createElement('div', [], [
-                Core::createElement('div', [], 'Static text'),
-                Core::createElement('button', ['@click' => 'decrement'], '-'),
-                Core::createElement('h1', [], $this->count),
-                Core::createElement('button', ['@click' => 'increment'], '+'),
-            ]),
-        ]);
+        // your UI will go here
+        return '
+            <body>
+                <div>
+                    <div>Static text</div>
+                    <button @click="decrement">-</button>
+                    <h1>' . $this->count . '</h1>
+                    <button @click="increment">+</button>
+                </div>
+            </body>
+        ';
     }
 }
 ```
@@ -85,7 +86,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 echo Core::render(new Test2());
 ```
 
-The most beautiful part about all this is that it can run outside Leaf. It is completely independent of Leaf and can be used in any PHP application.
+The most beautiful part about all this is that it can run outside Leaf. It is completely independent of Leaf or any other framework and can be used in any PHP application.
 
 _This file is still being updated!_
 
@@ -107,22 +108,6 @@ We are glad to have you. All contributions are welcome! To get started, familiar
 
 To report a security vulnerability, you can reach out to [@mychidarko](https://twitter.com/mychidarko) or [@leafphp](https://twitter.com/leafphp) on twitter. We will coordinate the fix and eventually commit the solution in this project.
 
-### Code contributors
-
-<table>
-	<tr>
-		<td align="center">
-			<a href="https://github.com/mychidarko">
-				<img src="https://avatars.githubusercontent.com/u/26604242?v=4" width="120px" alt=""/>
-				<br />
-				<sub>
-					<b>Michael Darko</b>
-				</sub>
-			</a>
-		</td>
-	</tr>
-</table>
-
 ## 🤩 Sponsoring Leaf
 
 Your cash contributions go a long way to help us make Leaf even better for you. You can sponsor Leaf and any of our packages on [open collective](https://opencollective.com/leaf) or check the [contribution page](https://leafphp.dev/support/) for a list of ways to contribute.
@@ -130,10 +115,3 @@ Your cash contributions go a long way to help us make Leaf even better for you. 
 And to all our existing cash/code contributors, we love you all ❤️
 
 View the [sponsors](https://leafphp.dev/support/) page to see all our sponsors.
-
-## 🤯 Links/Projects
-
--   [Leaf Docs](https://leafphp.dev)
--   [Skeleton Docs](https://skeleton.leafphp.dev)
--   [Leaf CLI Docs](https://cli.leafphp.dev)
--   [Aloe CLI Docs](https://leafphp.dev/aloe-cli/)
