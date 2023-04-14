@@ -395,15 +395,23 @@ var Connection = /*#__PURE__*/function () {
   function Connection() {}
   Connection.connect = function connect(type, uiData, dom) {
     var _component$getAttribu;
+    var pageState = {};
     var component = uiData.element.closest('[ui-state]');
-    var componentData = (_component$getAttribu = component.getAttribute('ui-state')) != null ? _component$getAttribu : '{}';
+    var componentData = JSON.parse((_component$getAttribu = component == null ? void 0 : component.getAttribute('ui-state')) != null ? _component$getAttribu : '{}');
+    var components = document.querySelectorAll('[ui-state]');
+    components.forEach(function (i) {
+      var _i$getAttribute;
+      var attr = JSON.parse((_i$getAttribute = i.getAttribute('ui-state')) != null ? _i$getAttribute : '{}');
+      pageState[attr.key] = attr;
+    });
     var payload = {
       type: type,
       payload: {
         params: [],
         method: uiData.method,
         methodArgs: uiData.methodArgs,
-        data: componentData
+        component: componentData == null ? void 0 : componentData.key,
+        data: pageState
       }
     };
     return fetch(window.location.href + "?_leaf_ui_config=" + JSON.stringify(payload), {
@@ -430,7 +438,7 @@ var Connection = /*#__PURE__*/function () {
               response.text().then(function (response) {
                 var data = JSON.parse(response);
                 window._leafUIConfig.data = data.state;
-                dom.diff(data.html, document.body);
+                dom.diff(data.html, component.nodeName === 'HTML' || !component ? document.body : component);
               });
               _context.next = 9;
               break;
@@ -496,6 +504,24 @@ var Dom = /*#__PURE__*/function () {
     return dom.body;
   }
   /**
+   * Wrap DOM node with a template element
+   */;
+  Dom.wrap = function wrap(node) {
+    var wrapper = document.createElement('x-leafui-wrapper');
+    wrapper.appendChild(node);
+    return wrapper;
+  }
+  /**
+   * Parse string to DOM
+   *
+   * @param html The html to parse
+   */;
+  Dom.parse = function parse(html) {
+    var parser = new DOMParser();
+    var dom = parser.parseFromString(html, 'text/html');
+    return dom.getRootNode().firstChild;
+  }
+  /**
    * Get the type for a node
    * @param  {HTMLElement} node The node
    * @return {String} The type
@@ -522,7 +548,9 @@ var Dom = /*#__PURE__*/function () {
    * @returns The diffed node
    */;
   Dom.diff = function diff(newNode, oldNode) {
-    Dom.diffElements(Dom.getBody(newNode, false), oldNode);
+    var structuredNewNode = oldNode.nodeName === 'BODY' ? Dom.getBody(newNode, false) : Dom.getBody(newNode, true).children[0];
+    var structuredOldNode = oldNode;
+    Dom.diffElements(structuredNewNode, structuredOldNode);
   }
   /**
    * Diff the DOM from two elements
@@ -541,7 +569,7 @@ var Dom = /*#__PURE__*/function () {
       }
     }
     for (var index = 0; index < newNodes.length; index++) {
-      var _Object$keys, _oldNodes$index, _oldNodes$index2;
+      var _node$parentNode$attr, _node$parentNode, _oldNodes$index$paren, _oldNodes$index$paren2, _Object$keys, _oldNodes$index2, _oldNodes$index3;
       var node = newNodes[index];
       if (!oldNodes[index]) {
         var newNodeClone = node.cloneNode(true);
@@ -556,10 +584,22 @@ var Dom = /*#__PURE__*/function () {
         }
         continue;
       }
-      if (Dom.getNodeType(node) !== Dom.getNodeType(oldNodes[index]) || !arraysMatch((_Object$keys = Object.keys((_oldNodes$index = oldNodes[index]) == null ? void 0 : _oldNodes$index.attributes)) != null ? _Object$keys : [], Object.keys(node.attributes)) || ((_oldNodes$index2 = oldNodes[index]) == null ? void 0 : _oldNodes$index2.innerHTML) !== node.innerHTML) {
+      if (!arraysMatch(Object.values((_node$parentNode$attr = (_node$parentNode = node.parentNode) == null ? void 0 : _node$parentNode.attributes) != null ? _node$parentNode$attr : {}), Object.values((_oldNodes$index$paren = (_oldNodes$index$paren2 = oldNodes[index].parentNode) == null ? void 0 : _oldNodes$index$paren2.attributes) != null ? _oldNodes$index$paren : {}))) {
+        for (var nIndex = 0; nIndex < ((_node$parentNode$attr2 = node.parentNode.attributes) == null ? void 0 : _node$parentNode$attr2.length); nIndex++) {
+          var _node$parentNode$attr2, _oldNodes$index, _oldNodes$index$paren3;
+          var attribute = node.parentNode.attributes[nIndex];
+          (_oldNodes$index = oldNodes[index]) == null ? void 0 : (_oldNodes$index$paren3 = _oldNodes$index.parentNode) == null ? void 0 : _oldNodes$index$paren3.setAttribute(attribute.name, attribute.value);
+        }
+      }
+      if (Dom.getNodeType(node) !== Dom.getNodeType(oldNodes[index]) || !arraysMatch((_Object$keys = Object.keys((_oldNodes$index2 = oldNodes[index]) == null ? void 0 : _oldNodes$index2.attributes)) != null ? _Object$keys : [], Object.keys(node.attributes)) || ((_oldNodes$index3 = oldNodes[index]) == null ? void 0 : _oldNodes$index3.innerHTML) !== node.innerHTML) {
         var _newNodeClone2 = node.cloneNode(true);
-        oldNodes[index].parentNode.replaceChild(_newNodeClone2, oldNodes[index]);
-        initComponent(_newNodeClone2);
+        if (!oldNodes[index].parentNode) {
+          oldNodes[index].replaceWith(_newNodeClone2);
+          initComponent(_newNodeClone2);
+        } else {
+          oldNodes[index].parentNode.replaceChild(_newNodeClone2, oldNodes[index]);
+          initComponent(_newNodeClone2);
+        }
         continue;
       }
       // If content is different, update it

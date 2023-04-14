@@ -28,6 +28,27 @@ export default class Dom {
     }
 
     /**
+     * Wrap DOM node with a template element
+     */
+    public static wrap(node: Node): HTMLElement {
+        const wrapper = document.createElement('x-leafui-wrapper');
+        wrapper.appendChild(node);
+        return wrapper;
+    }
+
+    /**
+     * Parse string to DOM
+     *
+     * @param html The html to parse
+     */
+    public static parse(html: string): HTMLElement {
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(html, 'text/html');
+
+        return dom.getRootNode().firstChild as HTMLElement;
+    }
+
+    /**
      * Get the type for a node
      * @param  {HTMLElement} node The node
      * @return {String} The type
@@ -56,7 +77,13 @@ export default class Dom {
      * @returns The diffed node
      */
     public static diff(newNode: string, oldNode: HTMLElement): void {
-        Dom.diffElements(Dom.getBody(newNode, false), oldNode);
+        const structuredNewNode =
+            oldNode.nodeName === 'BODY'
+                ? Dom.getBody(newNode, false)
+                : Dom.getBody(newNode, true).children[0];
+        const structuredOldNode = oldNode;
+
+        Dom.diffElements(structuredNewNode as HTMLElement, structuredOldNode);
     }
 
     /**
@@ -74,6 +101,7 @@ export default class Dom {
         const oldNodes = Array.prototype.slice.call(oldNode.children);
 
         let count = oldNodes.length - newNodes.length;
+
         if (count > 0) {
             for (; count > 0; count--) {
                 oldNodes[oldNodes.length - count].parentNode.removeChild(
@@ -111,6 +139,25 @@ export default class Dom {
             }
 
             if (
+                !arraysMatch(
+                    Object.values(node.parentNode?.attributes ?? {}),
+                    Object.values(oldNodes[index].parentNode?.attributes ?? {})
+                )
+            ) {
+                for (
+                    let nIndex = 0;
+                    nIndex < node.parentNode.attributes?.length;
+                    nIndex++
+                ) {
+                    const attribute = node.parentNode.attributes[nIndex];
+                    oldNodes[index]?.parentNode?.setAttribute(
+                        attribute.name,
+                        attribute.value
+                    );
+                }
+            }
+
+            if (
                 Dom.getNodeType(node) !== Dom.getNodeType(oldNodes[index]) ||
                 !arraysMatch(
                     Object.keys(oldNodes[index]?.attributes) ?? [],
@@ -119,11 +166,18 @@ export default class Dom {
                 oldNodes[index]?.innerHTML !== node.innerHTML
             ) {
                 const newNodeClone = node.cloneNode(true);
-                oldNodes[index].parentNode.replaceChild(
-                    newNodeClone,
-                    oldNodes[index]
-                );
-                initComponent(newNodeClone);
+
+                if (!oldNodes[index].parentNode) {
+                    oldNodes[index].replaceWith(newNodeClone);
+                    initComponent(newNodeClone);
+                } else {
+                    oldNodes[index].parentNode.replaceChild(
+                        newNodeClone,
+                        oldNodes[index]
+                    );
+                    initComponent(newNodeClone);
+                }
+
                 continue;
             }
 

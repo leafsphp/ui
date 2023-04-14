@@ -8,6 +8,16 @@ export default class Dom {
      */
     static getBody(html: string, removeScripts?: boolean): HTMLElement;
     /**
+     * Wrap DOM node with a template element
+     */
+    static wrap(node: Node): HTMLElement;
+    /**
+     * Parse string to DOM
+     *
+     * @param html The html to parse
+     */
+    static parse(html: string): HTMLElement;
+    /**
      * Get the type for a node
      * @param  {HTMLElement} node The node
      * @return {String} The type
