@@ -2,7 +2,7 @@
 
 namespace Leaf\UI;
 
-use MatthiasMullie\Minify\CSS;
+use Leaf\UI;
 
 /**
  * Leaf UI Core
@@ -12,61 +12,19 @@ use MatthiasMullie\Minify\CSS;
 class Core
 {
     /** Scripts to embed into view */
-    protected static $scripts = [];
+    public static $scripts = [];
 
     /** State to embed into view */
-    protected static $state = [];
+    public static $state = [];
 
     /** List of components in a view */
-    protected static $components = [];
+    public static $components = [];
 
     /** List of component methods */
-    protected static $componentMethods = [];
+    public static $componentMethods = [];
 
     /** List of mapped component methods */
-    protected static $mappedComponentMethods = [];
-
-    /**
-     * Initialize Leaf UI on a page
-     * @return string
-     */
-    public static function init(): string
-    {
-        return implode(static::$scripts) . static::createElement('script', [
-            'src' => '/vendor/leafs/ui/client/dist/ui.cjs.production.min.js',
-        ], ['']);
-    }
-
-    /**
-     * Render a Leaf UI
-     * 
-     * @param Component $component The Leaf UI component to render
-     */
-    public static function render($component)
-    {
-        $config = json_decode((new \Leaf\Http\Request())->get('_leaf_ui_config', false) ?? '', true) ?? [];
-
-        if (!$component->key) {
-            $component->key = Utils::randomId($component::class);
-        }
-
-        static::$state[$component->key] = array_merge(get_class_vars($component::class), [
-            'key' => $component->key,
-        ]);
-
-        static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
-        static::$mappedComponentMethods = array_merge(static::$mappedComponentMethods, [$component->key => get_class_methods($component)]);
-        static::$components = array_merge(static::$components, [$component->key => $component::class]);
-
-        $componentData = static::buildComponent($component, $config);
-
-        if ($componentData['responseType'] === 'json') {
-            unset($componentData['responseType']);
-            (new \Leaf\Http\Response())->json($componentData);
-        } else {
-            (new \Leaf\Http\Response())->markup($componentData['html']);
-        }
-    }
+    public static $mappedComponentMethods = [];
 
     /**
      * Process a Leaf UI component and return the HTML
@@ -76,74 +34,11 @@ class Core
      * @param bool $withoutScripts Whether to return the HTML without scripts
      * @param callable $callback The callback to run when the component is rendered
      */
-    protected static function buildComponent(Component $component, array $config, bool $withoutScripts = false)
+    public static function buildComponent(Component $component, array $config, bool $withoutScripts = false)
     {
-        $componentCalled = $component;
-
         if (is_string($config['type'] ?? null)) {
-            foreach ($config['payload']['data'] as $key => $value) {
-                if (property_exists($componentCalled, $key)) {
-                    $componentCalled->{$key} = $value;
-                    static::$state[$componentCalled->key][$key] = $value;
-                }
-            }
-
-            if ($config['type'] === 'callMethod') {
-                // compile and render to get the latest state (we don't really output anything)
-                static::compileTemplate($component->render());
-
-                $config['payload']['methodArgs'] = explode(',', $config['payload']['methodArgs']);
-                $methodToCall = [$componentCalled, $config['payload']['method']];
-
-                if (!method_exists($componentCalled, $config['payload']['method'])) {
-                    foreach (static::$mappedComponentMethods as $wKey => $wValue) {
-                        if (in_array($config['payload']['method'], $wValue)) {
-                            $componentCalled = new (static::$components[$wKey]);
-                            $methodToCall = [$componentCalled, $config['payload']['method']];
-
-                            // set the state for the component
-                            foreach ($config['payload']['data'] as $key => $value) {
-                                if (property_exists($componentCalled, $key)) {
-                                    $componentCalled->{$key} = $value;
-                                }
-                            }
-
-                            break;
-                        }
-                    }
-                }
-
-                call_user_func(
-                    $methodToCall,
-                    ...$config['payload']['methodArgs']
-                );
-            }
-
-            foreach ($config['payload']['data'] as $key => $value) {
-                if (property_exists($componentCalled, $key)) {
-                    static::$state[$componentCalled->key][$key] = $componentCalled->{$key};
-                }
-            }
-
-            $pageState = [];
-            $componentState = static::$state[$componentCalled->key];
-            foreach (array_values(static::$state) as $key => $value) {
-                $pageState = array_merge($pageState, $value);
-            }
-
-            return [
-                'responseType' => 'json',
-                'html' => $withoutScripts ?
-                    preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode($componentState) . "' $2>", static::compileTemplate($component->render(), $pageState), 1) :
-                    str_replace(
-                        '</body>',
-                        Core::createElement('script', [], ['
-                            window._leafUIConfig.methods = ' . json_encode(array_unique(static::$componentMethods)) . ';
-                            window._leafUIConfig.components = ' . json_encode(static::$components) . ';
-                        ']) . Core::init() . '</body>',
-                        preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode($componentState) . "' $2>", static::compileTemplate($component->render(), $pageState), 1)
-                    ),
-            ];
+            // called for async requests and compiling of components
+            return static::buildComponentAsync($component, $config, $withoutScripts);
         }
 
         $pageState = [];
@@ -151,7 +46,7 @@ class Core
             'key' => $component->key,
         ]);
         $componentState = static::$state[$component->key];
-        $parsedComponent = preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode($componentState) . "' $2>", static::compileTemplate($component->render(), static::$state[$component->key]), 1);
+        $parsedComponent = preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode($componentState) . "' $2>", Parser::compileTemplate($component->render(), $componentState), 1);
 
         foreach (array_values(static::$state) as $key => $value) {
             $pageState = array_merge($pageState, $value);
@@ -161,344 +56,160 @@ class Core
             'responseType' => 'html',
             'html' => $withoutScripts ?
                 $parsedComponent :
-                str_replace('</body>', Core::createElement('script', [], ['
+                str_replace('</body>', UI::createElement('script', [], ['
                     window._leafUIConfig = {
                         el: document.querySelector("body"),
                         component: "' . $component::class . '",
                         components: ' . json_encode(static::$components) . ',
+                        data: ' . json_encode(array_merge($pageState, ['key' => $component->key])) . ',
                         methods: ' . json_encode(array_unique(static::$componentMethods)) . ',
                         path: "' . $_SERVER['REQUEST_URI'] . '",
                         requestMethod: "' . $_SERVER['REQUEST_METHOD'] . '",
                     };
-                ']) . Core::init() . '</body>', $parsedComponent),
+                ']) . UI::init() . '</body>', $parsedComponent),
         ];
     }
 
     /**
-     * Render a Leaf UI from a file
+     * Process a Leaf UI component asynchronously
      * 
-     * @throws \JsonException
+     * @param Component $component The component to process
      */
-    public static function view(string $filename): string
+    public static function buildComponentAsync($component, $config, $withoutScripts = false)
     {
-        if (!file_exists($filename)) {
-            throw new \JsonException("$filename not found!");
+        $componentCalled = $component;
+
+        if (is_string($config['payload']['data'])) {
+            $config['payload']['data'] = json_decode($config['payload']['data'], true);
         }
 
-        return static::compileTemplate(file_get_contents($filename));
-    }
+        if (isset($config['payload']['component']) && isset(static::$components[$config['payload']['component']])) {
+            $componentCalled = new (static::$components[$config['payload']['component']]);
+            $componentCalled->key = $config['payload']['component'];
 
-    /**
-     * Compile Leaf UI Template
-     * @param string $rawText The template to compile
-     */
-    public static function compileTemplate(string $rawText, array $state = []): string
-    {
-        if (empty($state)) {
-            foreach (array_values(static::$state) as $key => $value) {
-                $state = array_merge($state, $value);
+            foreach ($config['payload']['data'][$config['payload']['component']] as $key => $value) {
+                if (property_exists($componentCalled, $key)) {
+                    $componentCalled->{$key} = $value;
+                    static::$state[$componentCalled->key][$key] = $value;
+                }
             }
-        }
+        } else if (isset($component->key) && isset(static::$components[$component->key])) {
+            $componentCalled = new (static::$components[$component->key]);
+            $componentCalled->key = $component->key;
 
-        $compiled = preg_replace_callback('/{{(.*?)}}/', function ($matches) use ($state) {
-            return $state[ltrim(trim($matches[1]), '$')] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
-        }, $rawText);
-
-        $compiled = preg_replace_callback('/<style.*?>(.*?)<\/style>/is', function ($matches) {
-            $newCSS = (new CSS())->add($matches[1])->minify();
-            return str_replace($matches[1], $newCSS, $matches[0]);
-        }, $compiled);
-
-
-        $compiled = preg_replace_callback('/\$eval\((.*?)\)/', function ($matches) use ($state) {
-            $compiledWithVars = preg_replace_callback('/\$([a-zA-Z0-9_]+)/', function ($matches) use ($state) {
-                return $state[$matches[1]] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
-            }, $matches[1]);
-
-            return eval("return $compiledWithVars;");
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@loop\([\s\S]*?\)\s*[\s\S]*@endloop\s*/', function ($matches) use ($state) {
-            $rendered = '';
-            $loopMatches = null;
-
-            preg_match('/@loop\((.*?)\)/', $matches[0], $loopMatches);
-
-            $dataToLoop = "return $loopMatches[1];";
-
-            if (strpos($loopMatches[1], '$') !== false) {
-                $loopMatches[1] = $state[ltrim(trim($loopMatches[1]), '$')] ?? trigger_error($loopMatches[1] . ' is not defined', E_USER_ERROR);
-                $dataToLoop = 'return json_decode(\'' . json_encode($loopMatches[1]) . '\', true);';
-            }
-
-            static::loop(eval($dataToLoop), function ($value, $key) use ($matches, &$rendered, $state) {
-                $regex = '/@loop\((.*?)\)([\s\S]*?)@endloop/';
-                preg_match($regex, $matches[0], $regexLoopMatches);
-
-                preg_match('/@key/', $regexLoopMatches[2], $keyMatches);
-                preg_match('/@value/', $regexLoopMatches[2], $valueMatches);
-
-                $renderedString = str_replace(
-                    ['@key', '@value', "\""],
-                    [$key, '$value', "'"],
-                    preg_replace(
-                        '/@value\[[\'"][^\'"]*[\'"]\]/',
-                        '{$0}',
-                        preg_replace_callback(
-                            '/@if\((.*?)\)/',
-                            function ($ifStatementMatches) {
-                                $compiledIf = '';
-
-                                if (strpos($ifStatementMatches[1], '@value[') !== false) {
-                                    $compiledIf = preg_replace('/@value\[[\'"]([^\'"]*)[\'"]\]/', '\'@value[\'$1\']\'', $ifStatementMatches[0]);
-                                }
-
-                                if (strpos($compiledIf, '@key') !== false) {
-                                    $compiledIf = str_replace('@key', '\'@key\'', $compiledIf);
-                                }
-
-                                return $compiledIf;
-                            },
-                            $regexLoopMatches[2]
-                        )
-                    )
-                );
-
-                $rendered .= eval("\$value = json_decode('" . json_encode($value) . "', true); return \"$renderedString\";");
-            });
-
-            return $rendered;
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@if\([\s\S]*?\)\s*[\s\S]*?(\s*@endif\s*)/', function ($matches) use ($state) {
-            $renderedData = '';
-            $compiledWithParsedConditions = preg_replace_callback('/\$([a-zA-Z0-9_]+)/', function ($matches) use ($state) {
-                return $state[$matches[1]] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
-            }, $matches[0]);
-
-            preg_match('/@if\((.*?)\)/', $compiledWithParsedConditions, $condition);
-
-            if (eval("return $condition[1];") === true) {
-                preg_match(
-                    '/@if\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*)/',
-                    $compiledWithParsedConditions,
-                    $ifConditionMatches
-                );
-
-                $renderedData = preg_replace('/@if\([\s\S]*?\)\s*[\s\S]*?/', '', $ifConditionMatches[0]);
-                $renderedData = preg_replace('/\s*@elseif\([\s\S]*?\)\s*[\s\S]*?/', '', $renderedData);
-                $renderedData = preg_replace('/\s*@else\s*[\s\S]*?/', '', $renderedData);
-            } else {
-                if (strpos($compiledWithParsedConditions, '@elseif') !== false) {
-                    preg_match('/@elseif\((.*?)\)/', $compiledWithParsedConditions, $elseifCondition);
-
-                    if (eval("return $elseifCondition[1];") === true) {
-                        preg_match(
-                            '/@elseif\([\s\S]*?\)\s*[\s\S]*?(?:\s*@elseif\([\s\S]*?\)\s*[\s\S]*?|\s*@else\s*[\s\S]*?|\s*@endif\s*)/',
-                            $compiledWithParsedConditions,
-                            $elseifConditionMatches
-                        );
-
-                        $renderedData = preg_replace('/@elseif\([\s\S]*?\)\s*[\s\S]*?/', '', $elseifConditionMatches[0]);
-                        $renderedData = preg_replace('/\s*@else\s*[\s\S]*?/', '', $renderedData);
-                    } else if (strpos($compiledWithParsedConditions, '@else') !== false) {
-                        preg_match('/@else\s*(.*?)\s*@endif/', $compiledWithParsedConditions, $elseConditionMatches);
-                        $renderedData = $elseConditionMatches[1];
+            if (isset($config['payload']['data'][$componentCalled->key])) {
+                foreach ($config['payload']['data'][$componentCalled->key] as $key => $value) {
+                    if (property_exists($componentCalled, $key)) {
+                        $componentCalled->{$key} = $value;
+                        static::$state[$componentCalled->key][$key] = $value;
                     }
-                } else {
-                    if (strpos($compiledWithParsedConditions, '@else') !== false) {
-                        preg_match('/@else\s*(.*?)\s*@endif/', $compiledWithParsedConditions, $elseConditionMatches);
-                        $renderedData = $elseConditionMatches[1];
+                }
+            } else {
+                foreach ($config['payload']['data'] as $key => $value) {
+                    if (property_exists($componentCalled, $key)) {
+                        $componentCalled->{$key} = $value;
+                        static::$state[$componentCalled->key][$key] = $value;
                     }
                 }
             }
-
-            return $renderedData;
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@php\s*([\s\S]+?)\s*@endphp/', function ($matches) {
-            return eval($matches[1]);
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@include\((.*?)\)/', function ($matches) use ($state) {
-            $viewToInclude = trim($matches[1], '"\'\`');
-
-            $compiledWithVars = preg_replace_callback('/\$([a-zA-Z0-9_]+)/', function ($matches) use ($state) {
-                return $state[$matches[1]] ?? trigger_error($matches[1] . ' is not defined', E_USER_ERROR);
-            }, $viewToInclude);
-
-            return Core::view($compiledWithVars);
-        }, $compiled);
-
-        $compiled = preg_replace_callback('/@component\((.*?)\)/', function ($matches) {
-            $paramsArray = preg_split('/,\s*/', $matches[1]);
-            $props = preg_replace('/\s+/', '', $paramsArray[1] ?? '[]');
-            return Core::component($paramsArray[0], eval("return $props;"));
-        }, $compiled);
-
-        return $compiled;
-    }
-
-    /**
-     * Embed a component into a view
-     * 
-     * @param string $component The component to embed
-     * @return string
-     */
-    public static function component(string $component, array $props = []): string
-    {
-        $component = trim($component, '"\'\`');
-
-        if (!class_exists($component)) {
-            trigger_error($component . ' does not exist', E_USER_ERROR);
         }
 
-        $component = new $component;
-
-        if (!$component->key) {
-            $component->key = Utils::randomId($component::class);
+        if ($config['type'] === 'callMethod') {
+            return static::callComponentMethod($componentCalled, $config, $withoutScripts);
         }
 
-        static::$state[$component->key] = array_merge(get_class_vars($component::class), static::$state[$component->key] ?? [], ['key' => $component->key], $props);
-        static::$componentMethods = array_merge(static::$componentMethods, get_class_methods($component));
-        static::$mappedComponentMethods = array_merge(static::$mappedComponentMethods, [$component->key => get_class_methods($component)]);
-        static::$components = array_merge(static::$components, [$component->key => $component::class]);
+        foreach ($config['payload']['data'] as $key => $value) {
+            if (property_exists($componentCalled, $key)) {
+                static::$state[$componentCalled->key][$key] = $componentCalled->{$key};
+            }
+        }
 
-        $config = [
-            'type' => 'component',
-            'payload' => [
-                'params' => [],
-                'method' => null,
-                'methodArgs' => [],
-                'component' => $component,
-                'data' => static::$state[$component->key],
-            ],
+        $componentState = static::$state[$componentCalled->key];
+
+        return [
+            'responseType' => 'json',
+            'html' => $withoutScripts ?
+                preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode($componentState) . "' $2>", Parser::compileTemplate($component->render(), $componentState), 1) :
+                str_replace(
+                    '</body>',
+                    UI::createElement('script', [], ['
+                            window._leafUIConfig.methods = ' . json_encode(array_unique(static::$componentMethods)) . ';
+                            window._leafUIConfig.components = ' . json_encode(static::$components) . ';
+                        ']) . UI::init() . '</body>',
+                    preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode($componentState) . "' $2>", Parser::compileTemplate($component->render(), $componentState), 1)
+                ),
         ];
-
-        $componentData = static::buildComponent($component, $config, true);
-
-        return $componentData['html'];
     }
 
     /**
-     * Create an HTML element
+     * Call a component method
      * 
-     * @param string $element The HTML Element to create
-     * @param array $props The Element children and attributes eg: `style`
-     * @param string|array|null $children The component children
+     * @param Component $component The component to call the method on
+     * @param array $config The configuration for the method
      */
-    public static function createElement(string $element, array $props = [], $children = [])
+    public static function callComponentMethod($component, $config, $withoutScripts = true)
     {
-        $subs = '';
-        $attributes = '';
+        // compile and render to get the latest state (we don't really output anything)
+        Parser::compileTemplate($component->render(), static::mergeState());
 
-        if (isset($props['children']) && (!$children || ($children && empty($children)))) {
-            $children = $props['children'];
-            unset($props['children']);
-        }
+        $config['payload']['methodArgs'] = explode(',', $config['payload']['methodArgs']);
+        $methodToCall = [$component, $config['payload']['method']];
 
-        if (is_array($children)) {
-            foreach ($children as $child) {
-                $subs .= $child;
+        if (!method_exists($component, $config['payload']['method'])) {
+            foreach (static::$mappedComponentMethods as $wKey => $wValue) {
+                if (in_array($config['payload']['method'], $wValue)) {
+                    $component = new (static::$components[$wKey]);
+                    $methodToCall = [$component, $config['payload']['method']];
+
+                    // set the state for the component
+                    foreach ($config['payload']['data'] as $key => $value) {
+                        if (property_exists($component, $key)) {
+                            $component->{$key} = $value;
+                        }
+                    }
+
+                    break;
+                }
             }
-        } else {
-            $subs = $children;
         }
 
-        if (!empty($props)) {
-            foreach ($props as $key => $value) {
-                $attributes .= "$key=\"" . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . "\" ";
-            }
-        }
-
-        return (!$children || $children && empty($children))
-            ? "<$element $attributes />"
-            : "<$element $attributes>$subs</$element>";
-    }
-
-    /**
-     * Map styles to style tag
-     * 
-     * @param array $styles The styles to apply
-     * @param array $props Style tag attributes
-     */
-    public static function createStyles(array $styles, array $props = [])
-    {
-        return self::createElement(
-            'style',
-            $props,
-            (new CSS())->add(self::parseStyles($styles))->minify()
+        call_user_func(
+            $methodToCall,
+            ...$config['payload']['methodArgs']
         );
-    }
 
-    /**
-     * Loop over an array of items
-     * 
-     * @param array|string|int $array The array to loop through
-     * @param callable $handler Call back function to run per iteration
-     */
-    public static function loop($array, callable $handler)
-    {
-        $element = "";
-
-        if (!is_array($array)) {
-            $array = explode(',', str_repeat(',', (int) $array - 1));
-        }
-
-        if (is_callable($handler)) {
-            foreach ($array as $key => $value) {
-                $element .= call_user_func($handler, $value, $key);
+        foreach ($config['payload']['data'][$config['payload']['component']] as $key => $value) {
+            if (property_exists($component, $key)) {
+                static::$state[$config['payload']['component']][$key] = $component->{$key};
             }
         }
 
-        return $element;
+        $component->key = $config['payload']['component'];
+        static::$state[$config['payload']['component']]['key'] = $config['payload']['component'];
+
+        return [
+            'responseType' => 'json',
+            'html' => $withoutScripts ?
+                preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode(static::$state[$config['payload']['component']]) . "' $2>", Parser::compileTemplate($component->render(), static::$state[$config['payload']['component']]), 1) :
+                str_replace(
+                    '</body>',
+                    UI::createElement('script', [], ['
+                                window._leafUIConfig.methods = ' . json_encode(array_unique(static::$componentMethods)) . ';
+                                window._leafUIConfig.components = ' . json_encode(static::$components) . ';
+                            ']) . UI::init() . '</body>',
+                    preg_replace('/<(\w+)([^>]*)>/i', "<$1 ui-state='" . json_encode(static::$state[$config['payload']['component']]) . "' $2>", Parser::compileTemplate($component->render(), static::$state[$config['payload']['component']]), 1)
+                ),
+        ];
     }
 
-    protected static function parseStyles(array $styles): string
+    public static function mergeState(array $extraState = []): array
     {
-        $parsedStyles = '';
+        $state = [];
 
-        foreach ($styles as $key => $value) {
-            if (is_numeric($key)) {
-                $value = rtrim($value, ';');
-                $parsedStyles .= "$value;";
-            } else if (is_string($value)) {
-                $value = rtrim($value, ';');
-
-                if (strpos($value, ':') !== false) {
-                    $parsedStyles .= "$key { $value; }";
-                } else {
-                    $parsedStyles .= "$key: $value;";
-                }
-            } else {
-                $parsedStyles .= "$key {";
-
-                foreach ($value as $selector => $styling) {
-                    if (is_array($styling)) {
-                        if (is_string($selector)) {
-                            $parsedStyles .= self::parseStyles([$selector => $styling]);
-                        } else {
-                            $parsedStyles .= self::parseStyles($styling);
-                        }
-                    } else {
-                        $styling = rtrim($styling, ';');
-
-                        if (is_numeric($selector)) {
-                            $parsedStyles .= self::parseStyles(["$styling;"]);
-                        } else {
-                            if (strpos($styling, ':') !== false) {
-                                $parsedStyles .= "$selector { $styling; }";
-                            } else {
-                                $parsedStyles .= "$selector: $styling;";
-                            }
-                        }
-                    }
-                }
-
-                $parsedStyles .= '}';
-            }
+        foreach (array_values(static::$state) as $key => $value) {
+            $state = array_merge($state, $value);
         }
 
-        return $parsedStyles;
+        return array_merge($state, $extraState);
     }
 }
