@@ -38,21 +38,22 @@ Since Leaf UI is modelled after React, everything is a component. You can create
 ```php
 <?php
 
-use Leaf\UI\Core;
 use Leaf\UI\Component;
 
 class Test2 extends Component
 {
+    // every component needs a unique key
+    public $key = "test2";
     public $count = 1;
 
     public function increment()
     {
-        $this->count = $this->count + 1;
+        $this->count++;
     }
 
     public function decrement()
     {
-        $this->count = $this->count - 1;
+        $this->count--;
     }
 
     public function render()
@@ -63,7 +64,7 @@ class Test2 extends Component
                 <div>
                     <div>Static text</div>
                     <button @click="decrement">-</button>
-                    <h1>' . $this->count . '</h1>
+                    <h1>{{ $count }}</h1>
                     <button @click="increment">+</button>
                 </div>
             </body>
@@ -79,16 +80,18 @@ To actually make this work, you simply need to render this component wherever yo
 ```php
 <?php
 
-use Leaf\UI\Core;
+use Leaf\UI;
 
-require_once __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
-echo Core::render(new Test2());
+UI::render(new Test2());
 ```
 
 The most beautiful part about all this is that it can run outside Leaf. It is completely independent of Leaf or any other framework and can be used in any PHP application.
 
 _This file is still being updated!_
+
+***Docs @ https://staging.ui.leafphp.dev are still being updated.***
 
 ## 💬 Stay In Touch
 
