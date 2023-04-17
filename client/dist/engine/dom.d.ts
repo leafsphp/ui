@@ -4,9 +4,9 @@ export default class Dom {
      *
      * @param html The html to parse
      * @param removeScripts Whether to remove scripts from the html
-     * @returns The body of the html
+     * @returns The body/root of the html
      */
-    static getBody(html: string, removeScripts?: boolean): HTMLElement;
+    static getBody(html: string, removeScripts?: boolean, nodeToReturn?: 'body' | 'root'): HTMLElement;
     /**
      * Wrap DOM node with a template element
      */

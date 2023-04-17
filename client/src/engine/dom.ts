@@ -7,11 +7,12 @@ export default class Dom {
      *
      * @param html The html to parse
      * @param removeScripts Whether to remove scripts from the html
-     * @returns The body of the html
+     * @returns The body/root of the html
      */
     public static getBody(
         html: string,
-        removeScripts: boolean = false
+        removeScripts: boolean = false,
+        nodeToReturn: 'body' | 'root' = 'body'
     ): HTMLElement {
         const parser = new DOMParser();
         const dom = parser.parseFromString(html, 'text/html');
@@ -24,7 +25,7 @@ export default class Dom {
             }
         }
 
-        return dom.body;
+        return nodeToReturn === 'body' ? dom.body : dom.documentElement;
     }
 
     /**
@@ -77,8 +78,16 @@ export default class Dom {
      * @returns The diffed node
      */
     public static diff(newNode: string, oldNode: HTMLElement): void {
+        if (newNode.includes('<html')) {
+            if (typeof window !== 'undefined') {
+                oldNode = window.document.documentElement;
+            }
+        }
+
         const structuredNewNode =
-            oldNode.nodeName === 'BODY'
+            oldNode instanceof HTMLHtmlElement
+                ? Dom.getBody(newNode, false, 'root')
+                : oldNode.nodeName === 'BODY'
                 ? Dom.getBody(newNode, false)
                 : Dom.getBody(newNode, true).children[0];
         const structuredOldNode = oldNode;

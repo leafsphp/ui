@@ -485,11 +485,14 @@ var Dom = /*#__PURE__*/function () {
    *
    * @param html The html to parse
    * @param removeScripts Whether to remove scripts from the html
-   * @returns The body of the html
+   * @returns The body/root of the html
    */
-  Dom.getBody = function getBody(html, removeScripts) {
+  Dom.getBody = function getBody(html, removeScripts, nodeToReturn) {
     if (removeScripts === void 0) {
       removeScripts = false;
+    }
+    if (nodeToReturn === void 0) {
+      nodeToReturn = 'body';
     }
     var parser = new DOMParser();
     var dom = parser.parseFromString(html, 'text/html');
@@ -499,7 +502,7 @@ var Dom = /*#__PURE__*/function () {
         scripts[i].remove();
       }
     }
-    return dom.body;
+    return nodeToReturn === 'body' ? dom.body : dom.documentElement;
   }
   /**
    * Wrap DOM node with a template element
@@ -546,7 +549,12 @@ var Dom = /*#__PURE__*/function () {
    * @returns The diffed node
    */;
   Dom.diff = function diff(newNode, oldNode) {
-    var structuredNewNode = oldNode.nodeName === 'BODY' ? Dom.getBody(newNode, false) : Dom.getBody(newNode, true).children[0];
+    if (newNode.includes('<html')) {
+      if (typeof window !== 'undefined') {
+        oldNode = window.document.documentElement;
+      }
+    }
+    var structuredNewNode = oldNode instanceof HTMLHtmlElement ? Dom.getBody(newNode, false, 'root') : oldNode.nodeName === 'BODY' ? Dom.getBody(newNode, false) : Dom.getBody(newNode, true).children[0];
     var structuredOldNode = oldNode;
     Dom.diffElements(structuredNewNode, structuredOldNode);
   }
