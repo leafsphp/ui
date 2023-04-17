@@ -17,16 +17,13 @@ use MatthiasMullie\Minify\CSS;
  */
 class UI
 {
-
-
     /**
      * Initialize Leaf UI on a page
      * @return string
      */
     public static function init(): string
     {
-        return (
-            implode(Core::$scripts) .
+        return (implode(Core::$scripts) .
             static::createElement('script', [
                 'src' => '/vendor/leafs/ui/client/dist/ui.cjs.production.min.js',
             ], [''])
@@ -103,7 +100,11 @@ class UI
         $component = new $component;
 
         if (!$component->key) {
-            $component->key = $props['key'] ?? Utils::randomId($component::class);
+            $component->key = Utils::randomId($component::class);
+        }
+
+        if ($props['key'] ?? false) {
+            $component->key = $props['key'];
         }
 
         Core::$state[$component->key] = array_merge(get_class_vars($component::class), Core::$state[$component->key] ?? [], ['key' => $component->key], $props);
