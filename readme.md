@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> **Leaf UI is sunset as of Leaf 5** and this repository is archived. It receives no new features, fixes or security patches. Published packages remain on Packagist, so existing apps keep working.
+>
+> For the why and the migration path (Blade, scaffolds, Inertia + React/Vue/Svelte), read the sunset notice: **https://leafphp.dev/docs/leaf-ui**
+
 <!-- markdownlint-disable no-inline-html -->
 <p align="center">
   <br><br>

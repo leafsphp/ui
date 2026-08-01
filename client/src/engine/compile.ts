@@ -49,8 +49,8 @@ export const collectRefs = (
 export const initDirectives = (
     el: HTMLElement
 ): Record<string, DirectiveData> => {
-    const directives: Record<string, DirectiveData> = {};
     const refs = collectRefs();
+    const directives: Record<string, DirectiveData> = {};
 
     // @ts-ignore
     for (const { name, value } of el.attributes) {

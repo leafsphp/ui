@@ -1,7 +1,7 @@
-import { UINode } from './../@types/core';
-import { compile } from '../engine/compile';
-import render from '../engine/render';
+import render from './../engine/render';
 import { directives } from './directives';
+import { UINode } from './../@types/core';
+import { compile } from './../engine/compile';
 
 export default class Component {
     public uiNodes: UINode[] = [];

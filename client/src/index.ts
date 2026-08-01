@@ -1,5 +1,6 @@
 import { init } from './core';
 import { monkeyPatchDomSetAttributeToAllowAtSymbols } from './utils/reset';
+
 export * from './@types';
 
 document.addEventListener('DOMContentLoaded', () => {

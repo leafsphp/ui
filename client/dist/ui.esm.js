@@ -375,12 +375,190 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
   throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
+/**
+ * @author Aiden Bai <hello@aidenybai.com>
+ * @package lucia
+ */
+// Lazy allows us to delay render calls if the main thread is blocked
+// This is kind of like time slicing in React but less advanced
+// It's a generator function that yields after a certain amount of time
+// This allows the browser to render other things while the generator is running
+// It's a bit like a setTimeout but it's more accurate
+var lazy = function lazy(threshold, generatorFunction) {
+  var generator = generatorFunction();
+  return function next() {
+    var start = performance.now();
+    var task = null;
+    do {
+      task = generator.next();
+    } while (performance.now() - start < threshold && !task.done);
+    if (task.done) return;
+    setTimeout(next);
+  };
+};
+
+var rawDirectiveSplitRE = function rawDirectiveSplitRE() {
+  return /:|\./gim;
+};
+var DIRECTIVE_SHORTHANDS;
+(function (DIRECTIVE_SHORTHANDS) {
+  DIRECTIVE_SHORTHANDS["@"] = "on";
+  DIRECTIVE_SHORTHANDS[":"] = "bind";
+})(DIRECTIVE_SHORTHANDS || (DIRECTIVE_SHORTHANDS = {}));
+function arraysMatch(a, b) {
+  return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every(function (val, index) {
+    return val === b[index];
+  });
+}
+window.leafUI = window.leafUI || {};
+
+var onDirective = function onDirective(_ref) {
+  var el = _ref.el,
+    parts = _ref.parts,
+    data = _ref.data;
+  var options = {};
+  var globalScopeEventProps = ['outside', 'global'];
+  var eventProps = parts.slice(2);
+  var EVENT_REGISTERED_FLAG = "__on_" + parts[1] + "_registered";
+  // @ts-expect-error: We're adding a custom property to the element
+  if (el[EVENT_REGISTERED_FLAG]) return;
+  var target = globalScopeEventProps.some(function (prop) {
+    return String(eventProps).includes(prop);
+  }) ? window : el;
+  var handler = function handler(event) {
+    if (eventProps.length > 0) {
+      if (event instanceof KeyboardEvent && /\d/gim.test(String(eventProps))) {
+        var whitelistedKeycodes = [];
+        eventProps.forEach(function (eventProp) {
+          // @ts-expect-error: eventProp can be a string, but isNaN only accepts number
+          if (!isNaN(eventProp)) {
+            whitelistedKeycodes.push(Number(eventProp));
+          }
+        });
+        if (!whitelistedKeycodes.includes(event.keyCode)) return;
+      }
+      // Parse event modifiers based on directive prop
+      if (eventProps.includes('prevent')) event.preventDefault();
+      if (eventProps.includes('stop')) event.stopPropagation();
+      if (eventProps.includes('self')) {
+        if (event.target !== el) return;
+      }
+      /* istanbul ignore next */
+      if (eventProps.includes('outside')) {
+        if (el.contains(event.target)) return;
+        if (el.offsetWidth < 1 && el.offsetHeight < 1) return;
+      }
+      if (eventProps.includes('enter') || eventProps.includes('meta')) {
+        if (event.key === 'Enter') {
+          data.compute(event);
+        }
+      }
+      if (eventProps.includes('ctrl') && event.ctrlKey || eventProps.includes('alt') && event.altKey || eventProps.includes('shift') && event.shiftKey || eventProps.includes('left') && 'button' in event && event.button === 0 || eventProps.includes('middle') && 'button' in event && event.button === 1 || eventProps.includes('right') && 'button' in event && event.button === 2) {
+        data.compute(event);
+      }
+    } else {
+      data.compute(event);
+    }
+  };
+  options.once = eventProps.includes('once');
+  options.passive = eventProps.includes('passive');
+  target.addEventListener(parts[1], handler, options);
+  // @ts-expect-error: We're adding a custom property to the element
+  el[EVENT_REGISTERED_FLAG] = true;
+};
+
+// import { bindDirective } from './directives/bind';
+var directives = {
+  // BIND: bindDirective,
+  // MODEL: modelDirective,
+  ON: onDirective
+};
+var renderDirective = function renderDirective(props, directives) {
+  directives[props.parts[0].toUpperCase()](props);
+};
+
 var UINodeType;
 (function (UINodeType) {
   UINodeType[UINodeType["NULL"] = -1] = "NULL";
   UINodeType[UINodeType["STATIC"] = 0] = "STATIC";
   UINodeType[UINodeType["DYNAMIC"] = 1] = "DYNAMIC";
 })(UINodeType || (UINodeType = {}));
+
+var render = function render(uiNodes, directives) {
+  var LAZY_MODE_TIMEOUT = 25;
+  var legalDirectiveNames = Object.keys(directives);
+  lazy(LAZY_MODE_TIMEOUT, /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+    var _iterator, _step, node, isStatic, _i, _Object$entries, _Object$entries$_i, directiveName, directiveData, rawDirectiveName, directiveProps;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _iterator = _createForOfIteratorHelperLoose(uiNodes);
+        case 1:
+          if ((_step = _iterator()).done) {
+            _context.next = 25;
+            break;
+          }
+          node = _step.value;
+          if (!(node.type === UINodeType.NULL)) {
+            _context.next = 5;
+            break;
+          }
+          return _context.abrupt("continue", 23);
+        case 5:
+          isStatic = node.type === UINodeType.STATIC;
+          if (isStatic) node.type = UINodeType.NULL;
+          _context.next = 9;
+          return;
+        case 9:
+          if (isStatic) {
+            _context.next = 11;
+            break;
+          }
+          return _context.abrupt("continue", 23);
+        case 11:
+          _i = 0, _Object$entries = Object.entries(node.directives);
+        case 12:
+          if (!(_i < _Object$entries.length)) {
+            _context.next = 23;
+            break;
+          }
+          _Object$entries$_i = _Object$entries[_i], directiveName = _Object$entries$_i[0], directiveData = _Object$entries$_i[1];
+          rawDirectiveName = directiveName.split(rawDirectiveSplitRE())[0];
+          if (legalDirectiveNames.includes(rawDirectiveName.toUpperCase())) {
+            _context.next = 17;
+            break;
+          }
+          return _context.abrupt("continue", 20);
+        case 17:
+          _context.next = 19;
+          return;
+        case 19:
+          // If affected, then push to render queue
+          if (isStatic) {
+            directiveProps = {
+              el: node.el,
+              parts: directiveName.split(rawDirectiveSplitRE()),
+              data: directiveData,
+              node: node
+            };
+            renderDirective(directiveProps, directives);
+            // [TODO] Remove this after testing
+            delete node.directives[directiveName];
+          }
+        case 20:
+          _i++;
+          _context.next = 12;
+          break;
+        case 23:
+          _context.next = 1;
+          break;
+        case 25:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }))();
+};
 
 var error = function error(err, expression, el) {
   var message = "LeafUI Error: \"" + err + "\"";
@@ -462,21 +640,6 @@ var Connection = /*#__PURE__*/function () {
   };
   return Connection;
 }();
-
-var rawDirectiveSplitRE = function rawDirectiveSplitRE() {
-  return /:|\./gim;
-};
-var DIRECTIVE_SHORTHANDS;
-(function (DIRECTIVE_SHORTHANDS) {
-  DIRECTIVE_SHORTHANDS["@"] = "on";
-  DIRECTIVE_SHORTHANDS[":"] = "bind";
-})(DIRECTIVE_SHORTHANDS || (DIRECTIVE_SHORTHANDS = {}));
-function arraysMatch(a, b) {
-  return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every(function (val, index) {
-    return val === b[index];
-  });
-}
-window.leafUI = window.leafUI || {};
 
 var Dom = /*#__PURE__*/function () {
   function Dom() {}
@@ -688,8 +851,8 @@ var collectRefs = function collectRefs(element) {
   return refs;
 };
 var initDirectives = function initDirectives(el) {
-  var directives = {};
   var refs = collectRefs();
+  var directives = {};
   // @ts-ignore
   var _loop = function _loop() {
     var _step2$value = _step2.value,
@@ -740,169 +903,6 @@ var compile = function compile(el, ignoreRootElement) {
     }
   });
   return uiNodes;
-};
-
-/**
- * @author Aiden Bai <hello@aidenybai.com>
- * @package lucia
- */
-// Lazy allows us to delay render calls if the main thread is blocked
-// This is kind of like time slicing in React but less advanced
-// It's a generator function that yields after a certain amount of time
-// This allows the browser to render other things while the generator is running
-// It's a bit like a setTimeout but it's more accurate
-var lazy = function lazy(threshold, generatorFunction) {
-  var generator = generatorFunction();
-  return function next() {
-    var start = performance.now();
-    var task = null;
-    do {
-      task = generator.next();
-    } while (performance.now() - start < threshold && !task.done);
-    if (task.done) return;
-    setTimeout(next);
-  };
-};
-
-var onDirective = function onDirective(_ref) {
-  var el = _ref.el,
-    parts = _ref.parts,
-    data = _ref.data;
-  var options = {};
-  var globalScopeEventProps = ['outside', 'global'];
-  var eventProps = parts.slice(2);
-  var EVENT_REGISTERED_FLAG = "__on_" + parts[1] + "_registered";
-  // @ts-expect-error: We're adding a custom property to the element
-  if (el[EVENT_REGISTERED_FLAG]) return;
-  var target = globalScopeEventProps.some(function (prop) {
-    return String(eventProps).includes(prop);
-  }) ? window : el;
-  var handler = function handler(event) {
-    if (eventProps.length > 0) {
-      if (event instanceof KeyboardEvent && /\d/gim.test(String(eventProps))) {
-        var whitelistedKeycodes = [];
-        eventProps.forEach(function (eventProp) {
-          // @ts-expect-error: eventProp can be a string, but isNaN only accepts number
-          if (!isNaN(eventProp)) {
-            whitelistedKeycodes.push(Number(eventProp));
-          }
-        });
-        if (!whitelistedKeycodes.includes(event.keyCode)) return;
-      }
-      // Parse event modifiers based on directive prop
-      if (eventProps.includes('prevent')) event.preventDefault();
-      if (eventProps.includes('stop')) event.stopPropagation();
-      if (eventProps.includes('self')) {
-        if (event.target !== el) return;
-      }
-      /* istanbul ignore next */
-      if (eventProps.includes('outside')) {
-        if (el.contains(event.target)) return;
-        if (el.offsetWidth < 1 && el.offsetHeight < 1) return;
-      }
-      if (eventProps.includes('enter') || eventProps.includes('meta')) {
-        if (event.key === 'Enter') {
-          data.compute(event);
-        }
-      }
-      if (eventProps.includes('ctrl') && event.ctrlKey || eventProps.includes('alt') && event.altKey || eventProps.includes('shift') && event.shiftKey || eventProps.includes('left') && 'button' in event && event.button === 0 || eventProps.includes('middle') && 'button' in event && event.button === 1 || eventProps.includes('right') && 'button' in event && event.button === 2) {
-        data.compute(event);
-      }
-    } else {
-      data.compute(event);
-    }
-  };
-  options.once = eventProps.includes('once');
-  options.passive = eventProps.includes('passive');
-  target.addEventListener(parts[1], handler, options);
-  // @ts-expect-error: We're adding a custom property to the element
-  el[EVENT_REGISTERED_FLAG] = true;
-};
-
-// import { bindDirective } from './directives/bind';
-var directives = {
-  // BIND: bindDirective,
-  // MODEL: modelDirective,
-  ON: onDirective
-};
-var renderDirective = function renderDirective(props, directives) {
-  directives[props.parts[0].toUpperCase()](props);
-};
-
-var render = function render(uiNodes, directives) {
-  var legalDirectiveNames = Object.keys(directives);
-  var LAZY_MODE_TIMEOUT = 25;
-  lazy(LAZY_MODE_TIMEOUT, /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-    var _iterator, _step, node, isStatic, _i, _Object$entries, _Object$entries$_i, directiveName, directiveData, rawDirectiveName, directiveProps;
-    return _regeneratorRuntime().wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          _iterator = _createForOfIteratorHelperLoose(uiNodes);
-        case 1:
-          if ((_step = _iterator()).done) {
-            _context.next = 25;
-            break;
-          }
-          node = _step.value;
-          if (!(node.type === UINodeType.NULL)) {
-            _context.next = 5;
-            break;
-          }
-          return _context.abrupt("continue", 23);
-        case 5:
-          isStatic = node.type === UINodeType.STATIC;
-          if (isStatic) node.type = UINodeType.NULL;
-          _context.next = 9;
-          return;
-        case 9:
-          if (isStatic) {
-            _context.next = 11;
-            break;
-          }
-          return _context.abrupt("continue", 23);
-        case 11:
-          _i = 0, _Object$entries = Object.entries(node.directives);
-        case 12:
-          if (!(_i < _Object$entries.length)) {
-            _context.next = 23;
-            break;
-          }
-          _Object$entries$_i = _Object$entries[_i], directiveName = _Object$entries$_i[0], directiveData = _Object$entries$_i[1];
-          rawDirectiveName = directiveName.split(rawDirectiveSplitRE())[0];
-          if (legalDirectiveNames.includes(rawDirectiveName.toUpperCase())) {
-            _context.next = 17;
-            break;
-          }
-          return _context.abrupt("continue", 20);
-        case 17:
-          _context.next = 19;
-          return;
-        case 19:
-          // If affected, then push to render queue
-          if (isStatic) {
-            directiveProps = {
-              el: node.el,
-              parts: directiveName.split(rawDirectiveSplitRE()),
-              data: directiveData,
-              node: node
-            };
-            renderDirective(directiveProps, directives);
-            // [TODO] Remove this after testing
-            delete node.directives[directiveName];
-          }
-        case 20:
-          _i++;
-          _context.next = 12;
-          break;
-        case 23:
-          _context.next = 1;
-          break;
-        case 25:
-        case "end":
-          return _context.stop();
-      }
-    }, _callee);
-  }))();
 };
 
 var Component = /*#__PURE__*/function () {

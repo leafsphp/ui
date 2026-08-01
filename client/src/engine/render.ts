@@ -1,14 +1,14 @@
 import lazy from './../utils/lazy';
-import { renderDirective } from './../core/directives';
 import { rawDirectiveSplitRE } from './../utils/data';
+import { renderDirective } from './../core/directives';
 import { Directives, UINode, UINodeType } from './../@types/core';
 
 const render = (
     uiNodes: UINode[],
     directives: Directives,
 ): void => {
-    const legalDirectiveNames = Object.keys(directives);
     const LAZY_MODE_TIMEOUT = 25;
+    const legalDirectiveNames = Object.keys(directives);
 
     lazy(LAZY_MODE_TIMEOUT, function*() {
         for (const node of uiNodes) {

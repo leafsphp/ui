@@ -25,7 +25,8 @@ class UI
     {
         return (implode(Core::$scripts) .
             static::createElement('script', [
-                'src' => '/vendor/leafs/ui/client/dist/ui.cjs.production.min.js',
+                // 'src' => '/vendor/leafs/ui/client/dist/ui.cjs.production.min.js',
+                'src' => 'http://localhost:5500/client/dist/ui.cjs.production.min.js',
             ], [''])
         );
     }

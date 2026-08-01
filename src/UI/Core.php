@@ -54,7 +54,7 @@ class Core
 
         return [
             'responseType' => 'html',
-            'html' => $withoutScripts ?
+            'html' => $withoutScripts? 
                 $parsedComponent :
                 str_replace('</body>', UI::createElement('script', [], ['
                     window._leafUIConfig = {
